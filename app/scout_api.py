@@ -335,7 +335,7 @@ class ScoutAPMAsync(ScoutAPMBase):
         )
         return response.get("results", {}).get("trace", {})
 
-    async def get_errors(
+    async def get_error_groups(
         self, app_id: int, from_time: str, to_time: str, endpoint: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get error problem groups for an application."""
@@ -361,25 +361,25 @@ class ScoutAPMAsync(ScoutAPMBase):
             f"apps/{app_id}/error_groups",
             params=params,
         )
-        return response.get("results", {}).get("errors", [])
+        return response.get("results", {}).get("error_groups", [])
 
-    async def get_error(self, app_id: int, error_id: int) -> Dict[str, Any]:
+    async def get_error_group(self, app_id: int, error_group_id: int) -> Dict[str, Any]:
         """Get a specific error problem group with its latest problem."""
         response = await self._make_request(
             "GET",
-            f"apps/{app_id}/error_groups/{error_id}",
+            f"apps/{app_id}/error_groups/{error_group_id}",
         )
-        return response.get("results", {}).get("error", {})
+        return response.get("results", {}).get("error_group", {})
 
-    async def get_error_problems(
-        self, app_id: int, error_id: int
+    async def get_error_group_errors(
+        self, app_id: int, error_group_id: int
     ) -> List[Dict[str, Any]]:
         """Get the most recent 100 problems for an error group."""
         response = await self._make_request(
             "GET",
-            f"apps/{app_id}/error_groups/{error_id}/errors",
+            f"apps/{app_id}/error_groups/{error_group_id}/errors",
         )
-        return response.get("results", {}).get("problems", [])
+        return response.get("results", {}).get("errors", [])
 
     async def get_metric_data_range(
         self, app_id: int, metric_type: str, days: int = 7

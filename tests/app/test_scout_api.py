@@ -435,9 +435,9 @@ class TestScoutAPMAsync:
             assert trace == {"id": 1, "spans": []}
 
     @pytest.mark.asyncio
-    async def test_get_errors(self, client):
+    async def test_get_error_groupss(self, client):
         """Test get_errors method."""
-        mock_response = {"results": {"errors": [{"id": 1, "message": "Error"}]}}
+        mock_response = {"results": {"error_groups": [{"id": 1, "message": "Error"}]}}
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
         with patch("app.scout_api.datetime") as mock_datetime:
@@ -449,7 +449,7 @@ class TestScoutAPMAsync:
             with patch.object(
                 client, "_make_request", return_value=mock_response
             ) as mock_request:
-                errors = await client.get_errors(
+                errors = await client.get_error_groups(
                     1, "2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z"
                 )
 
@@ -464,9 +464,9 @@ class TestScoutAPMAsync:
                 assert errors == [{"id": 1, "message": "Error"}]
 
     @pytest.mark.asyncio
-    async def test_get_errors_with_endpoint(self, client):
+    async def test_get_error_groups_with_endpoint(self, client):
         """Test get_errors method with endpoint filter."""
-        mock_response = {"results": {"errors": []}}
+        mock_response = {"results": {"error_groups": []}}
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
         with patch("app.scout_api.datetime") as mock_datetime:
@@ -478,12 +478,13 @@ class TestScoutAPMAsync:
             with patch.object(
                 client, "_make_request", return_value=mock_response
             ) as mock_request:
-                await client.get_errors(
+                res = await client.get_error_groups(
                     1,
                     "2024-01-07T00:00:00Z",
                     "2024-01-07T12:00:00Z",
                     endpoint="GET /users",
                 )
+                assert res == []
 
                 mock_request.assert_called_once_with(
                     "GET",
@@ -496,34 +497,36 @@ class TestScoutAPMAsync:
                 )
 
     @pytest.mark.asyncio
-    async def test_get_error(self, client):
+    async def test_get_error_group(self, client):
         """Test get_error method."""
-        mock_response = {"results": {"error": {"id": 1, "message": "Error details"}}}
-
-        with patch.object(
-            client, "_make_request", return_value=mock_response
-        ) as mock_request:
-            error = await client.get_error(1, 123)
-
-            mock_request.assert_called_once_with("GET", "apps/1/error_groups/123")
-            assert error == {"id": 1, "message": "Error details"}
-
-    @pytest.mark.asyncio
-    async def test_get_error_problems(self, client):
-        """Test get_error_problems method."""
         mock_response = {
-            "results": {"problems": [{"id": 1, "occurrence": "2024-01-01"}]}
+            "results": {"error_group": {"id": 1, "message": "Error details"}}
         }
 
         with patch.object(
             client, "_make_request", return_value=mock_response
         ) as mock_request:
-            problems = await client.get_error_problems(1, 123)
+            error = await client.get_error_group(1, 123)
+
+            mock_request.assert_called_once_with("GET", "apps/1/error_groups/123")
+            assert error == {"id": 1, "message": "Error details"}
+
+    @pytest.mark.asyncio
+    async def test_get_error_group_errors(self, client):
+        """Test get_error_problems method."""
+        mock_response = {
+            "results": {"errors": [{"id": 1, "occurred_at": "2024-01-01"}]}
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            problems = await client.get_error_group_errors(1, 123)
 
             mock_request.assert_called_once_with(
                 "GET", "apps/1/error_groups/123/errors"
             )
-            assert problems == [{"id": 1, "occurrence": "2024-01-01"}]
+            assert problems == [{"id": 1, "occurred_at": "2024-01-01"}]
 
     @pytest.mark.asyncio
     async def test_get_metric_data_range(self, client):
