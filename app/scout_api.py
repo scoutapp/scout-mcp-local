@@ -16,10 +16,9 @@ Usage:
 """
 
 import json
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Union, Any
-
+from typing import Any, Dict, List, Optional, Union
 
 import httpx
 
@@ -49,7 +48,10 @@ class ScoutAPMAPIError(ScoutAPMError):
     """Raised when the API returns an error response."""
 
     def __init__(
-        self, message: str, status_code: int = None, response_data: Dict = None
+        self,
+        message: str,
+        status_code: Optional[int] = None,
+        response_data: Optional[Dict] = None,
     ):
         super().__init__(message)
         self.status_code = status_code
@@ -71,7 +73,8 @@ class ScoutAPMBase(ABC):
         Args:
             api_key: Your Scout APM API key
             base_url: Optional custom base URL (defaults to https://scoutapm.com/api)
-            auth_method: Authentication method - "header", "query", or "body" (default: "header")
+            auth_method: Authentication method - "header", "query", or "body"
+                (default: "header")
         """
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
@@ -139,7 +142,8 @@ class ScoutAPMBase(ABC):
     def _validate_metric_params(self, metric_type: str, from_time: str, to_time: str):
         """Validate metric parameters.
 
-        Checks that metric_type is valid and that the time range does not exceed 2 weeks.
+        Checks that metric_type is valid and that the time range does not
+        exceed 2 weeks.
         """
         if metric_type not in VALID_METRICS:
             raise ValueError(
@@ -152,7 +156,8 @@ class ScoutAPMBase(ABC):
         self._validate_time_range(start, end)
 
     def _validate_time_range(self, from_time: datetime, to_time: datetime):
-        """Validate time ranges. Cannot exceed 2 weeks and from_time must be before to_time."""
+        """Validate time ranges. Cannot exceed 2 weeks and from_time must be
+        before to_time."""
         if from_time >= to_time:
             raise ValueError("from_time must be before to_time")
         if to_time - from_time > timedelta(days=14):
@@ -259,7 +264,7 @@ class ScoutAPMAsync(ScoutAPMBase):
         return response.get("results", {}).get("series", {})
 
     async def get_endpoints(
-        self, app_id: int, from_time: str, to_time: str
+        self, app_id: int, from_time: str, to_time: str, full: bool = True
     ) -> List[Dict[str, str]]:
         """Get list of endpoints for an application."""
         from_ = self._parse_time(from_time)
