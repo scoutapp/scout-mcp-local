@@ -1,0 +1,16 @@
+[project]
+name = "scout-mcp-local"
+author = "Scout Monitoring"
+version = "0.1.0"
+description = "A local MCP for Scout Monitoring data interactions."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mcp[cli]>=1.13.1",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "black>=25.1.0",
+    "flake8>=7.3.0",
+]
