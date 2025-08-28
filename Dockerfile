@@ -13,6 +13,7 @@ RUN uv sync --frozen
 
 # Copy source code
 COPY server.py ./
+COPY app ./app
 
 # Expose port if desired for local testing
 # EXPOSE 8999
