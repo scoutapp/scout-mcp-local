@@ -13,4 +13,19 @@ dependencies = [
 dev-dependencies = [
     "black>=25.1.0",
     "flake8>=7.3.0",
+    "isort>=6.0.1",
+    "mypy>=1.17.1",
+    "pytest-cov>=6.2.1",
+    "pytest>=8.4.1",
+    "taskipy>=1.14.1",
 ]
+
+[tool.taskipy.tasks]
+run = { cmd = "mcp dev server.py", help = "runs the local MCP server" }
+test = { cmd = "python -m pytest --cov=app --cov-report=html:coverage-html tests", help = "runs all unit tests" }
+mypy = { cmd = "mypy . --install-types --non-interactive --ignore-missing-imports", help = "Mypy" }
+flake8 = { cmd = "flake8 .", help = "confirms code style using flake8" }
+isort = { cmd = "isort --profile=black .", help = "Run isort" }
+djlint = { cmd = "djlint . --extension html --reformat", help = "Run djlint on templates" }
+lint = { cmd = "task flake8 && task mypy && task isort", help = "Run all linters" }
+check = { cmd = "task flake8 && task mypy && task isort && task test", help = "Run all checks" }

@@ -9,11 +9,7 @@ Allows users to ask questions about endpoint performance, latency trends, and mo
 import logging
 import sys
 
-from mcp.server.fastmcp import FastMCP
-
-
-# Create the MCP server
-server = FastMCP("scout-apm-local")
+from app.server import server
 
 logging.basicConfig(
     level=logging.DEBUG,
