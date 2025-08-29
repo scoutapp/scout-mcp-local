@@ -7,9 +7,10 @@ Allows users to ask questions about endpoint performance, latency trends, and mo
 """
 
 import logging
+import os
 import sys
 
-from app.server import server
+from app import server
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -18,10 +19,24 @@ logging.basicConfig(
 )
 
 
+def load_key():
+    """Initialize Scout APM client with API key from environment."""
+    api_key = os.getenv("SCOUT_API_KEY")
+    if not api_key:
+        raise ValueError("SCOUT_API_KEY environment variable is required")
+    return api_key
+
+
+# For local inspector
+server.api_client.api_key = load_key()
+server.api_client.init_client()
+mcp = server.mcp
+
+
 def main():
     """Main entry point for the MCP server."""
     try:
-        server.run(transport="stdio")
+        server.mcp.run(transport="stdio")
     except Exception as e:
         print(f"Error starting server: {e}", file=sys.stderr)
         sys.exit(1)

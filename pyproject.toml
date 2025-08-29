@@ -13,6 +13,7 @@ dependencies = [
 [tool.uv]
 dev-dependencies = [
     "black>=25.1.0",
+    "dotenv>=0.9.9",
     "flake8>=7.3.0",
     "isort>=6.0.1",
     "mypy>=1.17.1",
@@ -22,8 +23,11 @@ dev-dependencies = [
     "taskipy>=1.14.1",
 ]
 
+[tool.taskipy.settings]
+dotenv = [".env"]
+
 [tool.taskipy.tasks]
-run = { cmd = "mcp dev server.py", help = "runs the local MCP server" }
+dev = { cmd = "dotenv run mcp dev server.py", help = "runs the local MCP server" }
 test = { cmd = "python -m pytest --cov=app --cov-report=html:coverage-html tests", help = "runs all unit tests" }
 mypy = { cmd = "mypy . --install-types --non-interactive --ignore-missing-imports", help = "Mypy" }
 flake8 = { cmd = "flake8 .", help = "confirms code style using flake8" }

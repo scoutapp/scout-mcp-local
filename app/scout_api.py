@@ -16,11 +16,14 @@ Usage:
 """
 
 import json
+import logging
 from abc import ABC
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
+
+log = logging.getLogger(__name__)
 
 VALID_METRICS = {
     "response_time",
@@ -182,6 +185,8 @@ class ScoutAPMAsync(ScoutAPMBase):
     ):
         """Initialize asynchronous Scout APM client."""
         super().__init__(api_key, base_url, auth_method)
+
+    def init_client(self):
         self.client = httpx.AsyncClient(headers=self._get_auth_headers(), timeout=30.0)
 
     async def __aenter__(self):
@@ -221,6 +226,7 @@ class ScoutAPMAsync(ScoutAPMBase):
         request_params, request_json = self._prepare_request_params(
             params, json_data, method
         )
+        log.debug(f"Making {method} request to {url} with params {request_params}")
 
         try:
             response = await self.client.request(
