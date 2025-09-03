@@ -27,23 +27,12 @@ class TestScoutAPMBase:
         client = ScoutAPMAsync("test_key")
         assert client.api_key == "test_key"
         assert client.base_url == "https://scoutapm.com/api"
-        assert client.auth_method == "header"
 
     def test_init_custom_values(self):
         """Test initialization with custom values."""
-        client = ScoutAPMAsync(
-            "test_key", base_url="https://custom.url", auth_method="query"
-        )
+        client = ScoutAPMAsync("test_key", base_url="https://custom.url")
         assert client.api_key == "test_key"
         assert client.base_url == "https://custom.url"
-        assert client.auth_method == "query"
-
-    def test_init_invalid_auth_method(self):
-        """Test initialization with invalid auth method."""
-        with pytest.raises(
-            ValueError, match="auth_method must be 'header', 'query', or 'body'"
-        ):
-            ScoutAPMAsync("test_key", auth_method="invalid")
 
     def test_get_url(self):
         """Test URL construction."""
@@ -57,42 +46,9 @@ class TestScoutAPMBase:
 
     def test_get_auth_headers_header_method(self):
         """Test auth headers for header method."""
-        client = ScoutAPMAsync("test_key", auth_method="header")
+        client = ScoutAPMAsync("test_key")
         headers = client._get_auth_headers()
         assert headers == {"X-SCOUT-API": "test_key"}
-
-    def test_get_auth_headers_non_header_method(self):
-        """Test auth headers for non-header methods."""
-        client = ScoutAPMAsync("test_key", auth_method="query")
-        headers = client._get_auth_headers()
-        assert headers == {}
-
-    def test_prepare_request_params_query_auth(self):
-        """Test request parameter preparation for query auth."""
-        client = ScoutAPMAsync("test_key", auth_method="query")
-        params, json_data = client._prepare_request_params(
-            {"existing": "param"}, {"existing": "data"}, "GET"
-        )
-        assert params == {"existing": "param", "key": "test_key"}
-        assert json_data == {"existing": "data"}
-
-    def test_prepare_request_params_body_auth_post(self):
-        """Test request parameter preparation for body auth with POST."""
-        client = ScoutAPMAsync("test_key", auth_method="body")
-        params, json_data = client._prepare_request_params(
-            {"existing": "param"}, {"existing": "data"}, "POST"
-        )
-        assert params == {"existing": "param"}
-        assert json_data == {"existing": "data", "key": "test_key"}
-
-    def test_prepare_request_params_body_auth_get(self):
-        """Test request parameter preparation for body auth with GET (no key added)."""
-        client = ScoutAPMAsync("test_key", auth_method="body")
-        params, json_data = client._prepare_request_params(
-            {"existing": "param"}, {"existing": "data"}, "GET"
-        )
-        assert params == {"existing": "param"}
-        assert json_data == {"existing": "data"}
 
     def test_validate_metric_params_valid(self):
         """Test metric parameter validation with valid inputs."""
@@ -226,22 +182,24 @@ class TestScoutAPMAsync:
     async def test_aclose(self):
         """Test manual close."""
         client = ScoutAPMAsync("test_key")
-        with patch.object(client.client, "aclose") as mock_close:
+        c = client.get_client()
+        with patch.object(c, "aclose") as mock_close:
             await client.aclose()
             mock_close.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_make_request_success(self, client, mock_response_success):
         """Test successful API request."""
+        c = client.get_client()
         with patch.object(
-            client.client, "request", return_value=mock_response_success
+            c, "request", return_value=mock_response_success
         ) as mock_request:
             result = await client._make_request("GET", "apps")
 
             mock_request.assert_called_once_with(
                 method="GET",
                 url="https://scoutapm.com/api/v0/apps",
-                params={"key": "test_key"} if client.auth_method == "query" else {},
+                params=None,
                 json=None,
             )
             assert result == {"results": {"apps": [{"id": 1, "name": "Test App"}]}}
@@ -249,8 +207,9 @@ class TestScoutAPMAsync:
     @pytest.mark.asyncio
     async def test_make_request_network_error(self, client):
         """Test API request with network error."""
+        c = client.get_client()  # Ensure client is initialized
         with patch.object(
-            client.client, "request", side_effect=httpx.RequestError("Network error")
+            c, "request", side_effect=httpx.RequestError("Network error")
         ):
             with pytest.raises(ScoutAPMAPIError, match="Network error"):
                 await client._make_request("GET", "apps")

@@ -8,10 +8,9 @@ from . import scout_api
 
 log = logging.getLogger(__name__)
 
-# Create the MCP server
 mcp = FastMCP("scout-apm-local")
 
-api_client = scout_api.ScoutAPMAsync("")
+api_client = scout_api.ScoutAPMAsync()
 
 
 def format_time_series_for_js(data: dict[str, list]) -> str:
@@ -40,7 +39,6 @@ def list_available_metrics() -> set[str]:
 @mcp.tool(name="list_apps")
 async def list_scout_apps() -> list[dict[str, Any]]:
     """List available Scout APM applications."""
-    global log
     log.info("Fetching list of Scout APM applications")
     log.info(f"Using API key: {api_client.api_key[:4] + '...'}")
     try:

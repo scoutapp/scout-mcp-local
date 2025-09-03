@@ -29,7 +29,6 @@ def load_key():
 
 # For local inspector
 server.api_client.api_key = load_key()
-server.api_client.init_client()
 mcp = server.mcp
 
 
