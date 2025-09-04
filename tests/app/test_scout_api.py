@@ -12,10 +12,12 @@ import httpx
 import pytest
 
 from app.scout_api import (
+    Duration,
     ScoutAPMAPIError,
     ScoutAPMAsync,
     ScoutAPMAuthError,
     ScoutAPMError,
+    make_duration,
 )
 
 
@@ -53,54 +55,58 @@ class TestScoutAPMBase:
     def test_validate_metric_params_valid(self):
         """Test metric parameter validation with valid inputs."""
         client = ScoutAPMAsync("test_key")
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
         # Should not raise
-        client._validate_metric_params(
-            "response_time", "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
-        )
+        client._validate_metric_params("response_time", duration)
 
     def test_validate_metric_params_invalid_metric(self):
         """Test metric parameter validation with invalid metric."""
         client = ScoutAPMAsync("test_key")
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
         with pytest.raises(ValueError, match="Invalid metric_type"):
-            client._validate_metric_params(
-                "invalid_metric", "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
-            )
+            client._validate_metric_params("invalid_metric", duration)
 
     def test_validate_time_range_valid(self):
         """Test time range validation with valid range."""
         client = ScoutAPMAsync("test_key")
-        start = datetime(2024, 1, 1, tzinfo=timezone.utc)
-        end = datetime(2024, 1, 2, tzinfo=timezone.utc)
+        duration = Duration(
+            start=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            end=datetime(2024, 1, 2, tzinfo=timezone.utc)
+        )
         # Should not raise
-        client._validate_time_range(start, end)
+        client._validate_time_range(duration)
 
     def test_validate_time_range_start_after_end(self):
         """Test time range validation with start after end."""
         client = ScoutAPMAsync("test_key")
-        start = datetime(2024, 1, 2, tzinfo=timezone.utc)
-        end = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        duration = Duration(
+            start=datetime(2024, 1, 2, tzinfo=timezone.utc),
+            end=datetime(2024, 1, 1, tzinfo=timezone.utc)
+        )
         with pytest.raises(ValueError, match="from_time must be before to_time"):
-            client._validate_time_range(start, end)
+            client._validate_time_range(duration)
 
     def test_validate_time_range_too_long(self):
         """Test time range validation with range too long."""
         client = ScoutAPMAsync("test_key")
-        start = datetime(2024, 1, 1, tzinfo=timezone.utc)
-        end = datetime(2024, 1, 16, tzinfo=timezone.utc)  # 15 days
+        duration = Duration(
+            start=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            end=datetime(2024, 1, 16, tzinfo=timezone.utc)  # 15 days
+        )
         with pytest.raises(ValueError, match="Time range cannot exceed 2 weeks"):
-            client._validate_time_range(start, end)
+            client._validate_time_range(duration)
 
     def test_format_time(self):
         """Test time formatting."""
-        client = ScoutAPMAsync("test_key")
+        from app.scout_api import _format_time
         dt = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
-        formatted = client._format_time(dt)
+        formatted = _format_time(dt)
         assert formatted == "2024-01-01T12:30:45Z"
 
     def test_parse_time(self):
         """Test time parsing."""
-        client = ScoutAPMAsync("test_key")
-        parsed = client._parse_time("2024-01-01T12:30:45Z")
+        from app.scout_api import _parse_time
+        parsed = _parse_time("2024-01-01T12:30:45Z")
         expected = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
         assert parsed == expected
 
@@ -272,12 +278,13 @@ class TestScoutAPMAsync:
     async def test_get_metric_data(self, client):
         """Test get_metric_data method."""
         mock_response = {"results": {"series": {"response_time": [1.0, 2.0, 3.0]}}}
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
 
         with patch.object(
             client, "_make_request", return_value=mock_response
         ) as mock_request:
             data = await client.get_metric_data(
-                1, "response_time", "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
+                1, "response_time", duration
             )
 
             mock_request.assert_called_once_with(
@@ -296,13 +303,12 @@ class TestScoutAPMAsync:
                 {"id": "endpoint2", "name": "POST /users"},
             ]
         }
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
 
         with patch.object(
             client, "_make_request", return_value=mock_response
         ) as mock_request:
-            endpoints = await client.get_endpoints(
-                1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
-            )
+            endpoints = await client.get_endpoints(1, duration)
 
             assert len(mock_request.call_args_list) == 1
             assert endpoints == [
@@ -314,6 +320,7 @@ class TestScoutAPMAsync:
     async def test_get_endpoint_metric(self, client):
         """Test get_endpoint_metric method."""
         mock_response = {"results": {"series": {"response_time": [1.0, 2.0, 3.0]}}}
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
 
         with patch.object(
             client, "_make_request", return_value=mock_response
@@ -322,8 +329,7 @@ class TestScoutAPMAsync:
                 1,
                 "endpoint1",
                 "response_time",
-                "2024-01-01T00:00:00Z",
-                "2024-01-02T00:00:00Z",
+                duration,
             )
 
             mock_request.assert_called_once_with(
@@ -337,6 +343,7 @@ class TestScoutAPMAsync:
     async def test_get_endpoint_traces(self, client):
         """Test get_endpoint_traces method."""
         mock_response = {"results": {"traces": [{"id": 1, "duration": 100}]}}
+        duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
 
         # Mock datetime.now to return a fixed time for testing
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
@@ -350,7 +357,7 @@ class TestScoutAPMAsync:
                 client, "_make_request", return_value=mock_response
             ) as mock_request:
                 traces = await client.get_endpoint_traces(
-                    1, "endpoint1", "2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z"
+                    1, "endpoint1", duration
                 )
 
                 mock_request.assert_called_once_with(
@@ -366,6 +373,7 @@ class TestScoutAPMAsync:
     @pytest.mark.asyncio
     async def test_get_endpoint_traces_too_old(self, client):
         """Test get_endpoint_traces with date too old."""
+        duration = make_duration("2023-12-31T00:00:00Z", "2024-01-01T00:00:00Z")
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
         with patch("app.scout_api.datetime") as mock_datetime:
             # Configure the mock to behave like the real datetime module
@@ -377,7 +385,7 @@ class TestScoutAPMAsync:
                 ValueError, match="from_time cannot be older than 7 days"
             ):
                 await client.get_endpoint_traces(
-                    1, "endpoint1", "2023-12-31T00:00:00Z", "2024-01-01T00:00:00Z"
+                    1, "endpoint1", duration
                 )
 
     @pytest.mark.asyncio
@@ -397,6 +405,7 @@ class TestScoutAPMAsync:
     async def test_get_error_groupss(self, client):
         """Test get_errors method."""
         mock_response = {"results": {"error_groups": [{"id": 1, "message": "Error"}]}}
+        duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
         with patch("app.scout_api.datetime") as mock_datetime:
@@ -408,9 +417,7 @@ class TestScoutAPMAsync:
             with patch.object(
                 client, "_make_request", return_value=mock_response
             ) as mock_request:
-                errors = await client.get_error_groups(
-                    1, "2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z"
-                )
+                errors = await client.get_error_groups(1, duration)
 
                 mock_request.assert_called_once_with(
                     "GET",
@@ -426,6 +433,7 @@ class TestScoutAPMAsync:
     async def test_get_error_groups_with_endpoint(self, client):
         """Test get_errors method with endpoint filter."""
         mock_response = {"results": {"error_groups": []}}
+        duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
         with patch("app.scout_api.datetime") as mock_datetime:
@@ -439,8 +447,7 @@ class TestScoutAPMAsync:
             ) as mock_request:
                 res = await client.get_error_groups(
                     1,
-                    "2024-01-07T00:00:00Z",
-                    "2024-01-07T12:00:00Z",
+                    duration,
                     endpoint="GET /users",
                 )
                 assert res == []
@@ -486,37 +493,6 @@ class TestScoutAPMAsync:
                 "GET", "apps/1/error_groups/123/errors"
             )
             assert problems == [{"id": 1, "occurred_at": "2024-01-01"}]
-
-    @pytest.mark.asyncio
-    async def test_get_metric_data_range(self, client):
-        """Test get_metric_data_range method."""
-        with patch.object(
-            client, "get_metric_data", return_value={"data": "test"}
-        ) as mock_get:
-            fixed_now = datetime(2024, 1, 8, 12, 0, 0, tzinfo=timezone.utc)
-            with patch("app.scout_api.datetime") as mock_datetime:
-                mock_datetime.now.return_value = fixed_now
-                mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
-
-                result = await client.get_metric_data_range(1, "response_time", 7)
-
-                mock_get.assert_called_once()
-                args = mock_get.call_args[0]
-                assert args[0] == 1  # app_id
-                assert args[1] == "response_time"  # metric_type
-                # Check that from_time is 7 days before to_time
-                from_time = datetime.fromisoformat(args[2].replace("Z", "+00:00"))
-                to_time = datetime.fromisoformat(args[3].replace("Z", "+00:00"))
-                assert (to_time - from_time).days == 7
-                assert result == {"data": "test"}
-
-    @pytest.mark.asyncio
-    async def test_get_metric_data_range_too_many_days(self, client):
-        """Test get_metric_data_range with too many days."""
-        with pytest.raises(
-            ValueError, match="Cannot retrieve more than 14 days of data"
-        ):
-            await client.get_metric_data_range(1, "response_time", 15)
 
     @pytest.mark.asyncio
     async def test_get_app_summary(self, client):
