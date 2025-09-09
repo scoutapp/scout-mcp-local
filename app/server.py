@@ -107,6 +107,8 @@ async def get_app_endpoints(app_id: int, from_: str, to: str) -> list[dict[str, 
         duration = scout_api.make_duration(from_, to)
         async with api_client as scout_client:
             endpoints = await scout_client.get_endpoints(app_id, duration)
+            for e in endpoints:
+                e["endpoint_id"] = scout_api.get_endpoint_id(e)
         return endpoints
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]
@@ -153,7 +155,7 @@ async def get_endpoint_metric(
 
 @mcp.tool(name="get_app_endpoint_traces")
 async def get_app_endpoint_traces(
-    app_id: int, endpoint_id: str | None, from_: str, to: str
+    app_id: int, from_: str, to: str, endpoint_id: str | None = None
 ) -> list[dict[str, Any]]:
     """
     Get recent traces for an app, optionally filtered to a specific endpoint.
@@ -166,8 +168,11 @@ async def get_app_endpoint_traces(
         to (str): The end datetime in ISO 8601 format.
     """
     try:
+        duration = scout_api.make_duration(from_, to)
         async with api_client as scout_client:
-            traces = await scout_client.get_traces(app_id, endpoint_id)
+            traces = await scout_client.get_endpoint_traces(
+                app_id, endpoint_id, duration
+            )
         return traces
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]
@@ -175,7 +180,7 @@ async def get_app_endpoint_traces(
 
 @mcp.tool(name="get_app_error_groups")
 async def get_app_error_groups(
-    app_id: int, endpoint_id: str | None = None
+    app_id: int, from_: str, to: str, endpoint_id: str | None = None
 ) -> list[dict[str, Any]]:
     """
     Get recent error_groups for an app, optionally filtered to a specific endpoint.
@@ -186,8 +191,9 @@ async def get_app_error_groups(
             fetches all errors for the app.
     """
     try:
+        duration = scout_api.make_duration(from_, to)
         async with api_client as scout_client:
-            errors = await scout_client.get_error_groups(app_id, endpoint_id)
+            errors = await scout_client.get_error_groups(app_id, duration, endpoint_id)
         return errors
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]

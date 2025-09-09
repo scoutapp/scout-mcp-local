@@ -369,6 +369,17 @@ def make_duration(from_: str, to: str) -> Duration:
     return Duration(start=start, end=end)
 
 
+def get_endpoint_id(endpoint: dict[str, Any]) -> str:
+    """
+    Helper to get a unique identifier for an endpoint.
+    This is provided by the API implicitly in the 'link' field.
+    Args:
+        endpoint: Endpoint dictionary from the API.
+    """
+    link = endpoint.get("link", "")
+    return link.split("/")[-1] if link else ""
+
+
 def _format_time(dt: datetime) -> str:
     """Format datetime to ISO 8601 string for API. Relies on UTC timezone."""
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
