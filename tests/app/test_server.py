@@ -2,4 +2,4 @@ from app import server
 
 
 def test_server():
-    assert server.server
+    assert server.mcp

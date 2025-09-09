@@ -16,11 +16,14 @@ Usage:
 """
 
 import json
+import logging
 from abc import ABC
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
+
+log = logging.getLogger(__name__)
 
 VALID_METRICS = {
     "response_time",
@@ -64,24 +67,17 @@ class ScoutAPMBase(ABC):
     BASE_URL = "https://scoutapm.com/api"
     API_VERSION = "v0"
 
-    def __init__(
-        self, api_key: str, base_url: Optional[str] = None, auth_method: str = "header"
-    ):
+    def __init__(self, api_key: str, base_url: Optional[str] = None):
         """
         Initialize Scout APM client base.
 
         Args:
             api_key: Your Scout APM API key
             base_url: Optional custom base URL (defaults to https://scoutapm.com/api)
-            auth_method: Authentication method - "header", "query", or "body"
                 (default: "header")
         """
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
-        self.auth_method = auth_method
-
-        if auth_method not in ["header", "query", "body"]:
-            raise ValueError("auth_method must be 'header', 'query', or 'body'")
 
     def _get_url(self, endpoint: str) -> str:
         """Construct full URL for an endpoint."""
@@ -89,26 +85,7 @@ class ScoutAPMBase(ABC):
 
     def _get_auth_headers(self) -> Dict[str, str]:
         """Get authentication headers."""
-        if self.auth_method == "header":
-            return {"X-SCOUT-API": self.api_key}
-        return {}
-
-    def _prepare_request_params(
-        self,
-        params: Optional[Dict] = None,
-        json_data: Optional[Dict] = None,
-        method: str = "GET",
-    ) -> tuple:
-        """Prepare request parameters based on auth method."""
-        request_params = params or {}
-        request_json = json_data or {}
-
-        if self.auth_method == "query":
-            request_params["key"] = self.api_key
-        elif self.auth_method == "body" and method.upper() in ["POST", "PUT", "PATCH"]:
-            request_json["key"] = self.api_key
-
-        return request_params, request_json
+        return {"X-SCOUT-API": self.api_key}
 
     def _handle_response_errors(self, response: httpx.Response) -> Dict[str, Any]:
         """Handle common response errors and parse JSON."""
@@ -178,11 +155,13 @@ class ScoutAPMAsync(ScoutAPMBase):
     """Asynchronous Scout APM API client."""
 
     def __init__(
-        self, api_key: str, base_url: Optional[str] = None, auth_method: str = "header"
+        self,
+        api_key: str = "",
+        base_url: Optional[str] = None,
     ):
         """Initialize asynchronous Scout APM client."""
-        super().__init__(api_key, base_url, auth_method)
-        self.client = httpx.AsyncClient(headers=self._get_auth_headers(), timeout=30.0)
+        super().__init__(api_key, base_url)
+        self.client: Optional[httpx.AsyncClient] = None
 
     async def __aenter__(self):
         return self
@@ -192,7 +171,8 @@ class ScoutAPMAsync(ScoutAPMBase):
 
     async def aclose(self):
         """Close the HTTP client."""
-        await self.client.aclose()
+        if self.client:
+            await self.client.aclose()
 
     async def _make_request(
         self,
@@ -217,23 +197,35 @@ class ScoutAPMAsync(ScoutAPMBase):
             ScoutAPMAuthError: When authentication fails
             ScoutAPMAPIError: When the API returns an error
         """
+        client = self.get_client()
         url = self._get_url(endpoint)
-        request_params, request_json = self._prepare_request_params(
-            params, json_data, method
+        log.debug(
+            f"Making {method} request to {url} with params "
+            f"{params} and data {json_data}"
         )
 
         try:
-            response = await self.client.request(
+            response = await client.request(
                 method=method,
                 url=url,
-                params=request_params,
-                json=request_json if request_json else None,
+                params=params,
+                json=json_data if json_data else None,
             )
 
             return self._handle_response_errors(response)
 
         except httpx.RequestError as e:
             raise ScoutAPMAPIError(f"Network error: {str(e)}")
+
+    def get_client(self) -> httpx.AsyncClient:
+        """Get or initialize the HTTP client."""
+        if not self.client:
+            if not self.api_key:
+                raise ValueError("API key is required")
+            self.client = httpx.AsyncClient(
+                headers=self._get_auth_headers(), timeout=30.0
+            )
+        return self.client
 
     async def get_apps(self) -> List[Dict[str, Union[int, str]]]:
         """Get list of all applications."""
@@ -335,7 +327,7 @@ class ScoutAPMAsync(ScoutAPMBase):
         )
         return response.get("results", {}).get("trace", {})
 
-    async def get_errors(
+    async def get_error_groups(
         self, app_id: int, from_time: str, to_time: str, endpoint: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get error problem groups for an application."""
@@ -361,25 +353,25 @@ class ScoutAPMAsync(ScoutAPMBase):
             f"apps/{app_id}/error_groups",
             params=params,
         )
-        return response.get("results", {}).get("errors", [])
+        return response.get("results", {}).get("error_groups", [])
 
-    async def get_error(self, app_id: int, error_id: int) -> Dict[str, Any]:
+    async def get_error_group(self, app_id: int, error_group_id: int) -> Dict[str, Any]:
         """Get a specific error problem group with its latest problem."""
         response = await self._make_request(
             "GET",
-            f"apps/{app_id}/error_groups/{error_id}",
+            f"apps/{app_id}/error_groups/{error_group_id}",
         )
-        return response.get("results", {}).get("error", {})
+        return response.get("results", {}).get("error_group", {})
 
-    async def get_error_problems(
-        self, app_id: int, error_id: int
+    async def get_error_group_errors(
+        self, app_id: int, error_group_id: int
     ) -> List[Dict[str, Any]]:
         """Get the most recent 100 problems for an error group."""
         response = await self._make_request(
             "GET",
-            f"apps/{app_id}/error_groups/{error_id}/errors",
+            f"apps/{app_id}/error_groups/{error_group_id}/errors",
         )
-        return response.get("results", {}).get("problems", [])
+        return response.get("results", {}).get("errors", [])
 
     async def get_metric_data_range(
         self, app_id: int, metric_type: str, days: int = 7
