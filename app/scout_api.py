@@ -15,6 +15,7 @@ Usage:
     asyncio.run(main())
 """
 
+import dataclasses
 import json
 import logging
 from abc import ABC
@@ -59,6 +60,12 @@ class ScoutAPMAPIError(ScoutAPMError):
         super().__init__(message)
         self.status_code = status_code
         self.response_data = response_data
+
+
+@dataclasses.dataclass()
+class Duration:
+    start: datetime
+    end: datetime
 
 
 class ScoutAPMBase(ABC):
@@ -116,7 +123,7 @@ class ScoutAPMBase(ABC):
 
         return data
 
-    def _validate_metric_params(self, metric_type: str, from_time: str, to_time: str):
+    def _validate_metric_params(self, metric_type: str, duration: Duration):
         """Validate metric parameters.
 
         Checks that metric_type is valid and that the time range does not
@@ -128,27 +135,15 @@ class ScoutAPMBase(ABC):
             )
 
         # Validate time range (2 week maximum)
-        start = self._parse_time(from_time)
-        end = self._parse_time(to_time)
-        self._validate_time_range(start, end)
+        self._validate_time_range(duration)
 
-    def _validate_time_range(self, from_time: datetime, to_time: datetime):
+    def _validate_time_range(self, duration: Duration):
         """Validate time ranges. Cannot exceed 2 weeks and from_time must be
         before to_time."""
-        if from_time >= to_time:
+        if duration.start >= duration.end:
             raise ValueError("from_time must be before to_time")
-        if to_time - from_time > timedelta(days=14):
+        if duration.end - duration.start > timedelta(days=14):
             raise ValueError("Time range cannot exceed 2 weeks")
-
-    def _format_time(self, dt: datetime) -> str:
-        """Format datetime to ISO 8601 string for API. Relies on UTC timezone."""
-        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    def _parse_time(self, time_str: str) -> datetime:
-        """Parse ISO 8601 time string to datetime object."""
-        return datetime.fromisoformat(time_str.replace("Z", "+00:00")).astimezone(
-            timezone.utc
-        )
 
 
 class ScoutAPMAsync(ScoutAPMBase):
@@ -173,6 +168,8 @@ class ScoutAPMAsync(ScoutAPMBase):
         """Close the HTTP client."""
         if self.client:
             await self.client.aclose()
+            # TODO: Implement proper reuse.
+            self.client = None
 
     async def _make_request(
         self,
@@ -243,12 +240,13 @@ class ScoutAPMAsync(ScoutAPMBase):
         return response.get("results", {}).get("availableMetrics", [])
 
     async def get_metric_data(
-        self, app_id: int, metric_type: str, from_time: str, to_time: str
+        self, app_id: int, metric_type: str, duration: Duration
     ) -> Dict[str, List]:
         """Get time series data for a specific metric."""
-        self._validate_metric_params(metric_type, from_time, to_time)
+        self._validate_metric_params(metric_type, duration)
 
-        params = {"from": from_time, "to": to_time}
+        from_, to = (_format_time(duration.start), _format_time(duration.end))
+        params = {"from": from_, "to": to}
 
         response = await self._make_request(
             "GET", f"apps/{app_id}/metrics/{metric_type}", params=params
@@ -256,16 +254,14 @@ class ScoutAPMAsync(ScoutAPMBase):
         return response.get("results", {}).get("series", {})
 
     async def get_endpoints(
-        self, app_id: int, from_time: str, to_time: str, full: bool = True
+        self, app_id: int, duration: Duration, full: bool = True
     ) -> List[Dict[str, str]]:
         """Get list of endpoints for an application."""
-        from_ = self._parse_time(from_time)
-        to_ = self._parse_time(to_time)
-        self._validate_time_range(from_, to_)
+        self._validate_time_range(duration)
         params = {
             "full": full,
-            "from": self._format_time(from_),
-            "to": self._format_time(to_),
+            "from": _format_time(duration.start),
+            "to": _format_time(duration.end),
         }
         response = await self._make_request(
             "GET", f"apps/{app_id}/endpoints", params=params
@@ -277,18 +273,14 @@ class ScoutAPMAsync(ScoutAPMBase):
         app_id: int,
         endpoint_id: str,
         metric: str,
-        from_time: str,
-        to_time: str,
+        duration: Duration,
     ) -> List[str]:
         """Get metric data for a specific endpoint."""
-        self._validate_metric_params(metric, from_time, to_time)
+        self._validate_metric_params(metric, duration)
         response = await self._make_request(
             "GET",
             f"apps/{app_id}/endpoints/{endpoint_id}/metrics/{metric}",
-            params={
-                "from": from_time,
-                "to": to_time,
-            },
+            params=self._get_duration_params(duration),
         )
         return response.get("results", {}).get("series", {}).get(metric, [])
 
@@ -296,26 +288,20 @@ class ScoutAPMAsync(ScoutAPMBase):
         self,
         app_id: int,
         endpoint_id: str,
-        from_time: str,
-        to_time: str,
+        duration: Duration,
     ) -> List[Dict[str, Any]]:
         """Get traces for a specific endpoint."""
-        from_dt = self._parse_time(from_time)
-        to_dt = self._parse_time(to_time)
-        self._validate_time_range(from_dt, to_dt)
+        self._validate_time_range(duration)
 
         # Validate that from_time is not older than 7 days
         seven_days_ago = datetime.now(tz=timezone.utc) - timedelta(days=7)
-        if from_dt < seven_days_ago:
+        if duration.start < seven_days_ago:
             raise ValueError("from_time cannot be older than 7 days")
 
         response = await self._make_request(
             "GET",
             f"apps/{app_id}/endpoints/{endpoint_id}/traces",
-            params={
-                "from": from_time,
-                "to": to_time,
-            },
+            params=self._get_duration_params(duration),
         )
         return response.get("results", {}).get("traces", [])
 
@@ -328,23 +314,11 @@ class ScoutAPMAsync(ScoutAPMBase):
         return response.get("results", {}).get("trace", {})
 
     async def get_error_groups(
-        self, app_id: int, from_time: str, to_time: str, endpoint: Optional[str] = None
+        self, app_id: int, duration: Duration, endpoint: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get error problem groups for an application."""
-        from_dt = self._parse_time(from_time)
-        to_dt = self._parse_time(to_time)
-        self._validate_time_range(from_dt, to_dt)
-
-        # Validate that from_time is not older than 7 days
-        seven_days_ago = datetime.now(tz=timezone.utc) - timedelta(days=7)
-        if from_dt < seven_days_ago:
-            raise ValueError("from_time cannot be older than 7 days")
-
-        params = {
-            "from": from_time,
-            "to": to_time,
-        }
-
+        self._validate_time_range(duration)
+        params = self._get_duration_params(duration)
         if endpoint:
             params["endpoint"] = endpoint
 
@@ -373,24 +347,35 @@ class ScoutAPMAsync(ScoutAPMBase):
         )
         return response.get("results", {}).get("errors", [])
 
-    async def get_metric_data_range(
-        self, app_id: int, metric_type: str, days: int = 7
-    ) -> Dict[str, List]:
-        """Get metric data for the last N days."""
-        if days > 14:
-            raise ValueError("Cannot retrieve more than 14 days of data")
-
-        end_time = datetime.now(tz=timezone.utc)
-        start_time = end_time - timedelta(days=days)
-
-        from_time = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-        to_time = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        return await self.get_metric_data(app_id, metric_type, from_time, to_time)
-
     async def get_app_summary(self, app_id: int) -> Dict[str, Any]:
         """Get a summary of application information."""
         app_details = await self.get_app(app_id)
         available_metrics = await self.get_metrics(app_id)
 
         return {"app": app_details, "available_metrics": available_metrics}
+
+    def _get_duration_params(self, duration: Duration) -> Dict[str, str]:
+        """Get duration parameters for API requests."""
+        return {
+            "from": _format_time(duration.start),
+            "to": _format_time(duration.end),
+        }
+
+
+def make_duration(from_: str, to: str) -> Duration:
+    """Helper to create a Duration object from ISO 8601 strings."""
+    start = _parse_time(from_)
+    end = _parse_time(to)
+    return Duration(start=start, end=end)
+
+
+def _format_time(dt: datetime) -> str:
+    """Format datetime to ISO 8601 string for API. Relies on UTC timezone."""
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _parse_time(time_str: str) -> datetime:
+    """Parse ISO 8601 time string to datetime object."""
+    return datetime.fromisoformat(time_str.replace("Z", "+00:00")).astimezone(
+        timezone.utc
+    )
