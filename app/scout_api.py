@@ -26,6 +26,7 @@ import httpx
 
 log = logging.getLogger(__name__)
 
+VALID_INSIGHTS = {"n_plus_one", "memory_bloat", "slow_query"}
 VALID_METRICS = {
     "response_time",
     "response_time_95th",
@@ -197,8 +198,7 @@ class ScoutAPMAsync(ScoutAPMBase):
         client = self.get_client()
         url = self._get_url(endpoint)
         log.debug(
-            f"Making {method} request to {url} with params "
-            f"{params} and data {json_data}"
+            json.dumps({"request_url": url, "params": params, "json_data": json_data})
         )
 
         try:
@@ -220,7 +220,7 @@ class ScoutAPMAsync(ScoutAPMBase):
             if not self.api_key:
                 raise ValueError("API key is required")
             self.client = httpx.AsyncClient(
-                headers=self._get_auth_headers(), timeout=30.0
+                headers=self._get_auth_headers(), timeout=9.0
             )
         return self.client
 
@@ -347,19 +347,51 @@ class ScoutAPMAsync(ScoutAPMBase):
         )
         return response.get("results", {}).get("errors", [])
 
-    async def get_app_summary(self, app_id: int) -> Dict[str, Any]:
-        """Get a summary of application information."""
-        app_details = await self.get_app(app_id)
-        available_metrics = await self.get_metrics(app_id)
-
-        return {"app": app_details, "available_metrics": available_metrics}
-
     def _get_duration_params(self, duration: Duration) -> Dict[str, str]:
         """Get duration parameters for API requests."""
         return {
             "from": _format_time(duration.start),
             "to": _format_time(duration.end),
         }
+
+    async def get_insights(
+        self, app_id: int, limit: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Get all insights for an application (cached for 5 minutes)."""
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+
+        response = await self._make_request(
+            "GET", f"apps/{app_id}/insights", params=params if params else None
+        )
+        return response.get("results", {})
+
+    async def get_insight_by_type(
+        self, app_id: int, insight_type: str, limit: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Get data for a specific insight type.
+
+        Args:
+            app_id: Application ID
+            insight_type: Type of insight (n_plus_one, memory_bloat, slow_query)
+            limit: Maximum number of items (default: 20)
+        """
+        if insight_type not in VALID_INSIGHTS:
+            raise ValueError(
+                f"Invalid insight_type. Must be one of: {', '.join(VALID_INSIGHTS)}"
+            )
+
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+
+        response = await self._make_request(
+            "GET",
+            f"apps/{app_id}/insights/{insight_type}",
+            params=params if params else None,
+        )
+        return response.get("results", {})
 
 
 def make_duration(from_: str, to: str) -> Duration:
