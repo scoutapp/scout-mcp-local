@@ -46,7 +46,8 @@ async def list_scout_apps(active_since: str | None = None) -> list[dict[str, Any
     metric retention period of thirty days.
 
     Args:
-        active_since (str): ISO 8601 datetime string to filter apps active since that time.
+        active_since (str): ISO 8601 datetime string to filter apps active since that
+                            time.
     """
     active_time = (
         scout_api._parse_time(active_since)
@@ -214,7 +215,7 @@ async def get_app_error_groups(
     Args:
         app_id (int): The ID of the Scout APM application.
         endpoint_id (str | None): The ID of the endpoint to filter errors. If None,
-            fetches all errors for the app.
+                                  fetches all errors for the app.
     """
     try:
         duration = scout_api.make_duration(from_, to)
@@ -226,43 +227,31 @@ async def get_app_error_groups(
 
 
 @mcp.tool(name="get_app_insights")
-async def get_app_insights(app_id: int, limit: int | None = None) -> dict[str, Any]:
+async def get_app_insights(
+    app_id: int, insight_type: str | None = None, limit: int | None = None
+) -> dict[str, Any]:
     """
-    Get all insights for an application (cached for 5 minutes).
-    
+    Get or generate all insights for an application (cached for 5 minutes).
+
     Returns performance insights including N+1 queries, memory bloat, and slow queries.
     Each insight type includes count, new_count, and items array with specific details.
+    If insight_type is provided, only that type will be returned.
 
     Args:
         app_id (int): The ID of the Scout APM application.
+        insight_type: (str | None): Type of insight to filter (n_plus_one, memory_bloat,
+                                    slow_query) If None (the default), all types will
+                                    be returned.
         limit (int | None): Maximum number of items per insight type (default: 20).
     """
     try:
         async with api_client as scout_client:
-            insights = await scout_client.get_insights(app_id, limit)
+            if insight_type is None:
+                insights = await scout_client.get_insights(app_id, limit)
+            else:
+                insights = await scout_client.get_insight_by_type(
+                    app_id, insight_type, limit
+                )
         return insights
     except scout_api.ScoutAPMError as e:
-        return {"error": str(e)}
-
-
-@mcp.tool(name="get_app_insight_by_type")
-async def get_app_insight_by_type(
-    app_id: int, insight_type: str, limit: int | None = None
-) -> dict[str, Any]:
-    """
-    Get data for a specific insight type.
-    
-    Returns detailed information for a specific performance insight category.
-    Available types: n_plus_one, memory_bloat, slow_query.
-
-    Args:
-        app_id (int): The ID of the Scout APM application.
-        insight_type (str): Type of insight (n_plus_one, memory_bloat, slow_query).
-        limit (int | None): Maximum number of items to return (default: 20).
-    """
-    try:
-        async with api_client as scout_client:
-            insights = await scout_client.get_insight_by_type(app_id, insight_type, limit)
-        return insights
-    except (scout_api.ScoutAPMError, ValueError) as e:
         return {"error": str(e)}

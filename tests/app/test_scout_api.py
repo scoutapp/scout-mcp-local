@@ -71,7 +71,7 @@ class TestScoutAPMBase:
         client = ScoutAPMAsync("test_key")
         duration = Duration(
             start=datetime(2024, 1, 1, tzinfo=timezone.utc),
-            end=datetime(2024, 1, 2, tzinfo=timezone.utc)
+            end=datetime(2024, 1, 2, tzinfo=timezone.utc),
         )
         # Should not raise
         client._validate_time_range(duration)
@@ -81,7 +81,7 @@ class TestScoutAPMBase:
         client = ScoutAPMAsync("test_key")
         duration = Duration(
             start=datetime(2024, 1, 2, tzinfo=timezone.utc),
-            end=datetime(2024, 1, 1, tzinfo=timezone.utc)
+            end=datetime(2024, 1, 1, tzinfo=timezone.utc),
         )
         with pytest.raises(ValueError, match="from_time must be before to_time"):
             client._validate_time_range(duration)
@@ -91,7 +91,7 @@ class TestScoutAPMBase:
         client = ScoutAPMAsync("test_key")
         duration = Duration(
             start=datetime(2024, 1, 1, tzinfo=timezone.utc),
-            end=datetime(2024, 1, 16, tzinfo=timezone.utc)  # 15 days
+            end=datetime(2024, 1, 16, tzinfo=timezone.utc),  # 15 days
         )
         with pytest.raises(ValueError, match="Time range cannot exceed 2 weeks"):
             client._validate_time_range(duration)
@@ -99,6 +99,7 @@ class TestScoutAPMBase:
     def test_format_time(self):
         """Test time formatting."""
         from app.scout_api import _format_time
+
         dt = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
         formatted = _format_time(dt)
         assert formatted == "2024-01-01T12:30:45Z"
@@ -106,6 +107,7 @@ class TestScoutAPMBase:
     def test_parse_time(self):
         """Test time parsing."""
         from app.scout_api import _parse_time
+
         parsed = _parse_time("2024-01-01T12:30:45Z")
         expected = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
         assert parsed == expected
@@ -283,9 +285,7 @@ class TestScoutAPMAsync:
         with patch.object(
             client, "_make_request", return_value=mock_response
         ) as mock_request:
-            data = await client.get_metric_data(
-                1, "response_time", duration
-            )
+            data = await client.get_metric_data(1, "response_time", duration)
 
             mock_request.assert_called_once_with(
                 "GET",
@@ -356,9 +356,7 @@ class TestScoutAPMAsync:
             with patch.object(
                 client, "_make_request", return_value=mock_response
             ) as mock_request:
-                traces = await client.get_endpoint_traces(
-                    1, "endpoint1", duration
-                )
+                traces = await client.get_endpoint_traces(1, "endpoint1", duration)
 
                 mock_request.assert_called_once_with(
                     "GET",
@@ -384,9 +382,7 @@ class TestScoutAPMAsync:
             with pytest.raises(
                 ValueError, match="from_time cannot be older than 7 days"
             ):
-                await client.get_endpoint_traces(
-                    1, "endpoint1", duration
-                )
+                await client.get_endpoint_traces(1, "endpoint1", duration)
 
     @pytest.mark.asyncio
     async def test_get_trace(self, client):
@@ -495,22 +491,6 @@ class TestScoutAPMAsync:
             assert problems == [{"id": 1, "occurred_at": "2024-01-01"}]
 
     @pytest.mark.asyncio
-    async def test_get_app_summary(self, client):
-        """Test get_app_summary method."""
-        app_details = {"id": 1, "name": "Test App"}
-        metrics = ["response_time", "throughput"]
-
-        with patch.object(client, "get_app", return_value=app_details) as mock_app:
-            with patch.object(
-                client, "get_metrics", return_value=metrics
-            ) as mock_metrics:
-                summary = await client.get_app_summary(1)
-
-                mock_app.assert_called_once_with(1)
-                mock_metrics.assert_called_once_with(1)
-                assert summary == {"app": app_details, "available_metrics": metrics}
-
-    @pytest.mark.asyncio
     async def test_get_insights(self, client):
         """Test get_insights method."""
         mock_response = {
@@ -518,13 +498,13 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "insights": {
                     "n_plus_one": {"count": 5, "new_count": 2, "items": []},
                     "memory_bloat": {"count": 3, "new_count": 1, "items": []},
-                    "slow_query": {"count": 8, "new_count": 4, "items": []}
-                }
+                    "slow_query": {"count": 8, "new_count": 4, "items": []},
+                },
             }
         }
 
@@ -544,13 +524,13 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "insights": {
                     "n_plus_one": {"count": 5, "new_count": 2, "items": []},
                     "memory_bloat": {"count": 3, "new_count": 1, "items": []},
-                    "slow_query": {"count": 8, "new_count": 4, "items": []}
-                }
+                    "slow_query": {"count": 8, "new_count": 4, "items": []},
+                },
             }
         }
 
@@ -572,15 +552,15 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "total_count": 5,
                 "insight_type": "n_plus_one",
                 "new_count": 2,
                 "items": [
                     {"id": 1, "name": "User.posts query", "count": 15},
-                    {"id": 2, "name": "Post.comments query", "count": 8}
-                ]
+                    {"id": 2, "name": "Post.comments query", "count": 8},
+                ],
             }
         }
 
@@ -602,14 +582,18 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "total_count": 3,
                 "insight_type": "memory_bloat",
                 "new_count": 1,
                 "items": [
-                    {"id": 1, "endpoint": "UsersController#show", "allocations": 1000000}
-                ]
+                    {
+                        "id": 1,
+                        "endpoint": "UsersController#show",
+                        "allocations": 1000000,
+                    }
+                ],
             }
         }
 
@@ -631,15 +615,15 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "total_count": 8,
                 "insight_type": "slow_query",
                 "new_count": 4,
                 "items": [
                     {"id": 1, "query": "SELECT * FROM users WHERE...", "duration": 2.5},
-                    {"id": 2, "query": "SELECT * FROM posts WHERE...", "duration": 3.2}
-                ]
+                    {"id": 2, "query": "SELECT * FROM posts WHERE...", "duration": 3.2},
+                ],
             }
         }
 
@@ -661,12 +645,12 @@ class TestScoutAPMAsync:
                 "timeframe": {
                     "start_time": "2024-01-01T00:00:00Z",
                     "end_time": "2024-01-02T00:00:00Z",
-                    "duration_minutes": 1440
+                    "duration_minutes": 1440,
                 },
                 "total_count": 5,
                 "insight_type": "n_plus_one",
                 "new_count": 2,
-                "items": [{"id": 1, "name": "User.posts query", "count": 15}]
+                "items": [{"id": 1, "name": "User.posts query", "count": 15}],
             }
         }
 
