@@ -1,6 +1,7 @@
 # 2025-09-04T11:00:00Z
 import json
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -38,14 +39,39 @@ def list_available_metrics() -> set[str]:
 
 
 @mcp.tool(name="list_apps")
-async def list_scout_apps() -> list[dict[str, Any]]:
-    """List available Scout APM applications."""
-    log.info("Fetching list of Scout APM applications")
-    log.info(f"Using API key: {api_client.api_key[:4] + '...'}")
+async def list_scout_apps(active_since: str | None = None) -> list[dict[str, Any]]:
+    """
+    List available Scout APM applications. Provide an optional `active_since` ISO 8601
+    to filter to only apps that have reported data since that time. Defaults to the
+    metric retention period of thirty days.
+
+    Args:
+        active_since (str): ISO 8601 datetime string to filter apps active since that time.
+    """
+    active_time = (
+        scout_api._parse_time(active_since)
+        if active_since
+        else datetime.now(tz=timezone.utc) - timedelta(days=30)
+    )
+
+    def parse_reported_at(reported_at: str) -> datetime:
+        parsed = (
+            scout_api._parse_time(reported_at)
+            if reported_at
+            else datetime.min.replace(tzinfo=timezone.utc)
+        )
+        return parsed
+
     try:
         async with api_client as scout_client:
             apps = await scout_client.get_apps()
-        return apps
+
+        filtered = [
+            app
+            for app in apps
+            if parse_reported_at(app["last_reported_at"]) >= active_time
+        ]
+        return filtered
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]
 
