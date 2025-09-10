@@ -205,22 +205,51 @@ async def get_app_endpoint_traces(
         return [{"error": str(e)}]
 
 
+@mcp.tool(name="get_app_trace")
+async def get_app_trace(app_id: int, trace_id: int) -> dict[str, Any]:
+    """
+    Get an individual trace with all spans.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        trace_id (int): The ID of the trace to retrieve.
+    """
+    try:
+        async with api_client as scout_client:
+            trace = await scout_client.get_trace(app_id, trace_id)
+        return trace
+    except scout_api.ScoutAPMError as e:
+        return {"error": str(e)}
+
+
 @mcp.tool(name="get_app_error_groups")
 async def get_app_error_groups(
-    app_id: int, from_: str, to: str, endpoint_id: str | None = None
-) -> list[dict[str, Any]]:
+    app_id: int,
+    from_: str,
+    to: str,
+    endpoint_id: str | None = None,
+    error_group_id: str | None = None,
+) -> list[dict[str, Any]] | dict[str, Any]:
     """
-    Get recent error_groups for an app, optionally filtered to a specific endpoint.
+    Get recent error_groups for an app, optionally filtered to a specific endpoint or
+    group.
 
     Args:
         app_id (int): The ID of the Scout APM application.
         endpoint_id (str | None): The ID of the endpoint to filter errors. If None,
                                   fetches all errors for the app.
+        error_group_id (str | None): The ID of the error group to filter errors.
     """
     try:
         duration = scout_api.make_duration(from_, to)
         async with api_client as scout_client:
-            errors = await scout_client.get_error_groups(app_id, duration, endpoint_id)
+            if error_group_id:
+                errors = await scout_client.get_error_group(app_id, error_group_id)
+                errors = [errors] if errors else []
+            else:
+                errors = await scout_client.get_error_groups(
+                    app_id, duration, endpoint_id
+                )
         return errors
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]
