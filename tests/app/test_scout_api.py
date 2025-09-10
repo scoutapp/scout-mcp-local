@@ -510,6 +510,182 @@ class TestScoutAPMAsync:
                 mock_metrics.assert_called_once_with(1)
                 assert summary == {"app": app_details, "available_metrics": metrics}
 
+    @pytest.mark.asyncio
+    async def test_get_insights(self, client):
+        """Test get_insights method."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "insights": {
+                    "n_plus_one": {"count": 5, "new_count": 2, "items": []},
+                    "memory_bloat": {"count": 3, "new_count": 1, "items": []},
+                    "slow_query": {"count": 8, "new_count": 4, "items": []}
+                }
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insights(1)
+
+            mock_request.assert_called_once_with("GET", "apps/1/insights", params=None)
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insights_with_limit(self, client):
+        """Test get_insights method with limit parameter."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "insights": {
+                    "n_plus_one": {"count": 5, "new_count": 2, "items": []},
+                    "memory_bloat": {"count": 3, "new_count": 1, "items": []},
+                    "slow_query": {"count": 8, "new_count": 4, "items": []}
+                }
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insights(1, limit=10)
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/insights", params={"limit": 10}
+            )
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insight_by_type_n_plus_one(self, client):
+        """Test get_insight_by_type method with n_plus_one type."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "total_count": 5,
+                "insight_type": "n_plus_one",
+                "new_count": 2,
+                "items": [
+                    {"id": 1, "name": "User.posts query", "count": 15},
+                    {"id": 2, "name": "Post.comments query", "count": 8}
+                ]
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insight_by_type(1, "n_plus_one")
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/insights/n_plus_one", params=None
+            )
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insight_by_type_memory_bloat(self, client):
+        """Test get_insight_by_type method with memory_bloat type."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "total_count": 3,
+                "insight_type": "memory_bloat",
+                "new_count": 1,
+                "items": [
+                    {"id": 1, "endpoint": "UsersController#show", "allocations": 1000000}
+                ]
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insight_by_type(1, "memory_bloat")
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/insights/memory_bloat", params=None
+            )
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insight_by_type_slow_query(self, client):
+        """Test get_insight_by_type method with slow_query type."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "total_count": 8,
+                "insight_type": "slow_query",
+                "new_count": 4,
+                "items": [
+                    {"id": 1, "query": "SELECT * FROM users WHERE...", "duration": 2.5},
+                    {"id": 2, "query": "SELECT * FROM posts WHERE...", "duration": 3.2}
+                ]
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insight_by_type(1, "slow_query")
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/insights/slow_query", params=None
+            )
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insight_by_type_with_limit(self, client):
+        """Test get_insight_by_type method with limit parameter."""
+        mock_response = {
+            "results": {
+                "timeframe": {
+                    "start_time": "2024-01-01T00:00:00Z",
+                    "end_time": "2024-01-02T00:00:00Z",
+                    "duration_minutes": 1440
+                },
+                "total_count": 5,
+                "insight_type": "n_plus_one",
+                "new_count": 2,
+                "items": [{"id": 1, "name": "User.posts query", "count": 15}]
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            insights = await client.get_insight_by_type(1, "n_plus_one", limit=5)
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/insights/n_plus_one", params={"limit": 5}
+            )
+            assert insights == mock_response["results"]
+
+    @pytest.mark.asyncio
+    async def test_get_insight_by_type_invalid_type(self, client):
+        """Test get_insight_by_type method with invalid type."""
+        with pytest.raises(ValueError, match="Invalid insight_type"):
+            await client.get_insight_by_type(1, "invalid_type")
+
 
 class TestExceptions:
     """Test custom exceptions."""

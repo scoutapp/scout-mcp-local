@@ -361,6 +361,46 @@ class ScoutAPMAsync(ScoutAPMBase):
             "to": _format_time(duration.end),
         }
 
+    async def get_insights(
+        self, app_id: int, limit: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Get all insights for an application (cached for 5 minutes)."""
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+
+        response = await self._make_request(
+            "GET", f"apps/{app_id}/insights", params=params if params else None
+        )
+        return response.get("results", {})
+
+    async def get_insight_by_type(
+        self, app_id: int, insight_type: str, limit: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Get data for a specific insight type.
+        
+        Args:
+            app_id: Application ID
+            insight_type: Type of insight (n_plus_one, memory_bloat, slow_query)
+            limit: Maximum number of items (default: 20)
+        """
+        valid_types = {"n_plus_one", "memory_bloat", "slow_query"}
+        if insight_type not in valid_types:
+            raise ValueError(
+                f"Invalid insight_type. Must be one of: {', '.join(valid_types)}"
+            )
+
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+
+        response = await self._make_request(
+            "GET", 
+            f"apps/{app_id}/insights/{insight_type}", 
+            params=params if params else None
+        )
+        return response.get("results", {})
+
 
 def make_duration(from_: str, to: str) -> Duration:
     """Helper to create a Duration object from ISO 8601 strings."""
