@@ -13,8 +13,8 @@ and explained right where you are working.
 ## Prerequisites
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
-[Sign up](https://scoutapm.com/users/sign_up) and get your API key from the Scout
-[settings](https://scoutapm.com/settings).
+1. [Sign up](https://scoutapm.com/users/sign_up)
+2. [settings](https://scoutapm.com/settings) to get or create an API key
 
 **The MCP server will not currently start without an API key set, either in the
 environment or by a command-line argument on startup.**
