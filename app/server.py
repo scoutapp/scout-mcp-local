@@ -182,15 +182,14 @@ async def get_endpoint_metric(
 
 @mcp.tool(name="get_app_endpoint_traces")
 async def get_app_endpoint_traces(
-    app_id: int, from_: str, to: str, endpoint_id: str | None = None
+    app_id: int, from_: str, to: str, endpoint_id: str
 ) -> list[dict[str, Any]]:
     """
-    Get recent traces for an app, optionally filtered to a specific endpoint.
+    Get recent traces for an app filtered to a specific endpoint.
 
     Args:
         app_id (int): The ID of the Scout APM application.
-        endpoint_id (str | None): The ID of the endpoint to filter traces. If None,
-            fetches all traces for the app.
+        endpoint_id (str): The ID of the endpoint to filter traces.
         from_ (str): The start datetime in ISO 8601 format.
         to (str): The end datetime in ISO 8601 format.
     """
