@@ -46,19 +46,27 @@ to your AI Assistant's config. Here is the shape of the JSON (the top-level key 
 }
 ```
 
-- Claude Code
-    1. Paste the JSON above into `./scoutmcp.json` (or somewhere convenient)
-    2. Update the `SCOUT_API_KEY` value to your actual api key
-    3. `claude mcp add-json ./scoutmcp.json`
-- Cursor
-    -[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVk9JFBVVF9ZT1VSX0tFWV9IRVJFIHNjb3V0YXBwL3Njb3V0LW1jcC1sb2NhbCIsImVudiI6e319)
-    - MAKE SURE to update the `SCOUT_API_KEY` value to your actual api key in
-      `Arguments` in the Cursor Settings > MCP
+#### Claude Code
+1. Copy the inner object above and paste it into `./scoutapm.json` or somewhere
+   convenient
+    - `{"command": "docker", "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY=your_scout_api_key_here", "scoutapp/scout-mcp-local"], "env": {}}`
+2. Update the `SCOUT_API_KEY` value to your actual api key
+3. `claude mcp add-json scoutmcp "$(cat ./scoutmcp.json)"`
+
+#### Cursor
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVk9JFBVVF9ZT1VSX0tFWV9IRVJFIHNjb3V0YXBwL3Njb3V0LW1jcC1sb2NhbCIsImVudiI6e319)
+
+MAKE SURE to update the `SCOUT_API_KEY` value to your actual api key in
+  `Arguments` in the Cursor Settings > MCP
+
+#### VS Code Copilot
 - [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server)
     - We recommend the "Add an MCP server to your workspace" option
-- Claude Desktop: Add above JSON to config:
-    - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-    - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+#### Claude Desktop
+Add above JSON to config:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 
 ### Token Usage
