@@ -4,25 +4,35 @@ This repository contains code to locally run an MCP server that can access Scout
 Monitoring data via Scout's API. We provide a Docker image that can be pulled and run by
 your AI Assistant to access Scout Monitoring data.
 
+This puts Scout Monitoring's performance and error data directly in the hands of your AI Assistant.
+For Rails, Django, FastAPI, Laravel and more. Use it to get traces and errors with line-of-code information
+that the AI can use to target fixes right in your editor and codebase. N+1 queries, slow endpoints,
+slow queries, memory bloat, throughput issues - all your favorite performance problems surfaced
+and explained right where you are working.
+
 ## Prerequisites
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
 [Sign up](https://scoutapm.com/users/sign_up) and get your API key from the Scout
 [settings](https://scoutapm.com/settings).
 
+**The MCP server will not currently start without an API key set, either in the
+environment or by a command-line argument on startup.**
+
 ## Installation
+
+We recommend using the provided Docker image to run the MCP server.
+It is intended to be started by your AI Assistant and configured with your Scout API
+key. Many local clients allow specifying a command to run the MCP server in some
+location. A few examples are provided below.
 
 The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/scout-mcp-local).
 
 
-### Configure a local Client (e.g. Claude Desktop)
+### Configure a local Client (e.g. Claude Code)
 
 Usually this just means supplying a command to run the MCP server with your API key in the environment
-to your AI Assistant's config.
-
-Add to your Claude Desktop config:
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+to your AI Assistant's config. Here is the shape of the JSON (the top-level key varies):
 
 ```json
 {
@@ -35,6 +45,20 @@ Add to your Claude Desktop config:
   }
 }
 ```
+
+- Claude Code
+    1. Paste the JSON above into `./scoutmcp.json` (or somewhere convenient)
+    2. Update the `SCOUT_API_KEY` value to your actual api key
+    3. `claude mcp add-json ./scoutmcp.json`
+- [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVk9JFBVVF9ZT1VSX0tFWV9IRVJFIHNjb3V0YXBwL3Njb3V0LW1jcC1sb2NhbCIsImVudiI6e319)
+    - MAKE SURE to update the `SCOUT_API_KEY` value to your actual api key in
+      `Arguments` in the Cursor Settings > MCP
+- [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server)
+    - We recommend the "Add an MCP server to your workspace" option
+- Claude Desktop: Add above JSON to config:
+    - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+    - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
 
 ### Token Usage
 
