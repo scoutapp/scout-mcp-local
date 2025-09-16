@@ -10,6 +10,8 @@ that the AI can use to target fixes right in your editor and codebase. N+1 queri
 slow queries, memory bloat, throughput issues - all your favorite performance problems surfaced
 and explained right where you are working.
 
+**If this helps you debug faster or ship with more confidence, :star: it!**
+
 ## Prerequisites
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
@@ -116,8 +118,19 @@ Scout's MCP is intended to put error and performance data directly in the... han
 Use it to get traces and errors with line-of-code information that the AI can use to target
 fixes right in your editor.
 
+Most assistants will show you both raw tool calls and perform analysis. Desktop assistants
+can readily create custom JS applications to explore whatever data you desire.
+Assistants integrated into code editors can use trace data and error backtraces to make
+fixes right in your codebase.
 
-## Useful Prompts
+Combine Scout's MCP with your AI Assistant's other tools to:
+
+- Create rich GitHub/GitLab issues based on errors and performance data
+- Make JIRA fun - have your AI Assistant create tickets with all the details
+- Generate PRs that fix specific errors and performance problems
+
+
+### Useful Prompts
 
 - "Summarize the available tools in the Scout Monitoring MCP."
 - "Find the slowest endpoints for app `my-app-name` in the last 7 days. Generate a table
@@ -129,6 +142,8 @@ fixes right in your editor.
 
 
 ## Local Development
+
+We use `uv` and `taskipy` to manage environments and run tasks for this project.
 
 ### Run with Inspector
 ```bash
