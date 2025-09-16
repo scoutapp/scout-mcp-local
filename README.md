@@ -10,11 +10,20 @@ that the AI can use to target fixes right in your editor and codebase. N+1 queri
 slow queries, memory bloat, throughput issues - all your favorite performance problems surfaced
 and explained right where you are working.
 
+**If this helps you debug faster or ship with more confidence, :star: it!**
+
 ## Prerequisites
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
 1. [Sign up](https://scoutapm.com/users/sign_up)
-2. [settings](https://scoutapm.com/settings) to get or create an API key
+2. Install the Scout Agent in your application and send Scout data!
+    - [Ruby](https://scoutapm.com/docs/ruby/setup)
+    - [Python](https://scoutapm.com/docs/python/setup)
+    - [PHP](https://scoutapm.com/docs/php)
+    - If you are trying this out locally, make sure `monitor: true`, `errors_enabled: true`
+      are set in your config for the best experience
+2. Visit [settings](https://scoutapm.com/settings) to get or create an API key
+2. Install Docker. Instructions below assume you can start a Docker container
 
 **The MCP server will not currently start without an API key set, either in the
 environment or by a command-line argument on startup.**
@@ -28,8 +37,11 @@ location. A few examples are provided below.
 
 The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/scout-mcp-local).
 
+Of course, you can always clone this repo and run the MCP server directly; `uv` or other
+environment management tools are recommended.
 
-### Configure a local Client (e.g. Claude Code)
+
+### Configure a local Client (e.g. Claude/Cursor/VS Code Copilot)
 
 Usually this just means supplying a command to run the MCP server with your API key in the environment
 to your AI Assistant's config. Here is the shape of the JSON (the top-level key varies):
@@ -39,34 +51,57 @@ to your AI Assistant's config. Here is the shape of the JSON (the top-level key 
   "mcpServers": {
     "scout-apm": {
       "command": "docker",
-      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY=your_scout_api_key_here", "scoutapp/scout-mcp-local"],
-      "env": {}
+      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY", "scoutapp/scout-mcp-local"],
+      "env": { "SCOUT_API_KEY": "your_scout_api_key_here"}
     }
   }
 }
 ```
 
-#### Claude Code
-1. Copy the inner object above and paste it into `./scoutapm.json` or somewhere
-   convenient
-    - `{"command": "docker", "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY=your_scout_api_key_here", "scoutapp/scout-mcp-local"], "env": {}}`
-2. Update the `SCOUT_API_KEY` value to your actual api key
-3. `claude mcp add-json scoutmcp "$(cat ./scoutmcp.json)"`
+<details>
+<summary> Claude Code</summary>
 
-#### Cursor
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVk9JFBVVF9ZT1VSX0tFWV9IRVJFIHNjb3V0YXBwL3Njb3V0LW1jcC1sb2NhbCIsImVudiI6e319)
+```sh
+claude mcp add scoutmcp -e SCOUT_API_KEY=your_scout_api_key_here -- docker run --rm -i -e scoutapp/scout-mcp-local
+```
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVkgc2NvdXRhcHAvc2NvdXQtbWNwLWxvY2FsIiwiZW52Ijp7IlNDT1VUX0FQSV9LRVkiOiJ5b3VyX3Njb3V0X2FwaV9rZXlfaGVyZSJ9fQ%3D%3D)
 
 MAKE SURE to update the `SCOUT_API_KEY` value to your actual api key in
   `Arguments` in the Cursor Settings > MCP
+</details>
 
-#### VS Code Copilot
+<details>
+<summary>VS Code Copilot</summary>
+
 - [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server)
     - We recommend the "Add an MCP server to your workspace" option
+</details>
 
-#### Claude Desktop
-Add above JSON to config:
+<details>
+<summary>Claude Desktop</summary>
+
+Add the following to your claude config file:
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "scout-apm": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY", "scoutapp/scout-mcp-local"],
+      "env": { "SCOUT_API_KEY": "your_scout_api_key_here"}
+    }
+  }
+}
+```
+
+</details>
 
 
 ### Token Usage
@@ -83,16 +118,32 @@ Scout's MCP is intended to put error and performance data directly in the... han
 Use it to get traces and errors with line-of-code information that the AI can use to target
 fixes right in your editor.
 
+Most assistants will show you both raw tool calls and perform analysis. Desktop assistants
+can readily create custom JS applications to explore whatever data you desire.
+Assistants integrated into code editors can use trace data and error backtraces to make
+fixes right in your codebase.
 
-## Useful Prompts
+Combine Scout's MCP with your AI Assistant's other tools to:
+
+- Create rich GitHub/GitLab issues based on errors and performance data
+- Make JIRA fun - have your AI Assistant create tickets with all the details
+- Generate PRs that fix specific errors and performance problems
+
+
+### Useful Prompts
 
 - "Summarize the available tools in the Scout Monitoring MCP."
-- "Find the slowest endpoints for app `my-app-name` in the last 7 days."
-- "Show me the highest-frequency errors for app Foo in the last 24 hours."
-- "Get any recent n+1 queries for app Bar"
+- "Find the slowest endpoints for app `my-app-name` in the last 7 days. Generate a table
+  with the results including the average response time, throughput, and P95 response time."
+- "Show me the highest-frequency errors for app `Foo` in the last 24 hours. Get the
+  latest error detail, examine the backtrace and suggest a fix."
+- "Get any recent n+1 insights for app `Bar`. Pull the specific trace by id and help me
+  optimize it based on the backtrace data."
 
 
 ## Local Development
+
+We use `uv` and `taskipy` to manage environments and run tasks for this project.
 
 ### Run with Inspector
 ```bash
