@@ -41,7 +41,7 @@ Of course, you can always clone this repo and run the MCP server directly; `uv` 
 environment management tools are recommended.
 
 
-### Configure a local Client (e.g. Claude Code)
+### Configure a local Client (e.g. Claude/Cursor/VS Code Copilot)
 
 Usually this just means supplying a command to run the MCP server with your API key in the environment
 to your AI Assistant's config. Here is the shape of the JSON (the top-level key varies):
