@@ -14,7 +14,14 @@ and explained right where you are working.
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
 1. [Sign up](https://scoutapm.com/users/sign_up)
-2. [settings](https://scoutapm.com/settings) to get or create an API key
+2. Install the Scout Agent in your application and send Scout data!
+    - [Ruby](https://scoutapm.com/docs/ruby/setup)
+    - [Python](https://scoutapm.com/docs/python/setup)
+    - [PHP](https://scoutapm.com/docs/php)
+    - If you are trying this out locally, make sure `monitor: true`, `errors_enabled: true`
+      are set in your config for the best experience
+2. Visit [settings](https://scoutapm.com/settings) to get or create an API key
+2. Install Docker. Instructions below assume you can start a Docker container
 
 **The MCP server will not currently start without an API key set, either in the
 environment or by a command-line argument on startup.**
@@ -28,6 +35,9 @@ location. A few examples are provided below.
 
 The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/scout-mcp-local).
 
+Of course, you can always clone this repo and run the MCP server directly; `uv` or other
+environment management tools are recommended.
+
 
 ### Configure a local Client (e.g. Claude Code)
 
@@ -39,8 +49,8 @@ to your AI Assistant's config. Here is the shape of the JSON (the top-level key 
   "mcpServers": {
     "scout-apm": {
       "command": "docker",
-      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY=your_scout_api_key_here", "scoutapp/scout-mcp-local"],
-      "env": {}
+      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY", "scoutapp/scout-mcp-local"],
+      "env": { "SCOUT_API_KEY": "your_scout_api_key_here"}
     }
   }
 }
