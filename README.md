@@ -56,27 +56,50 @@ to your AI Assistant's config. Here is the shape of the JSON (the top-level key 
 }
 ```
 
-#### Claude Code
-1. Copy the inner object above and paste it into `./scoutapm.json` or somewhere
-   convenient
-    - `{"command": "docker", "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY=your_scout_api_key_here", "scoutapp/scout-mcp-local"], "env": {}}`
-2. Update the `SCOUT_API_KEY` value to your actual api key
-3. `claude mcp add-json scoutmcp "$(cat ./scoutmcp.json)"`
+<details>
+<summary> Claude Code</summary>
 
-#### Cursor
+```sh
+claude mcp add scoutmcp -e SCOUT_API_KEY=your_scout_api_key_here -- docker run --rm -i -e scoutapp/scout-mcp-local
+```
+</details>
+
+<details>
+<summary>Cursor</summary>
+
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=scout-apm&config=eyJjb21tYW5kIjoiZG9ja2VyIHJ1biAtLXJtIC1pIC0tZW52IFNDT1VUX0FQSV9LRVk9JFBVVF9ZT1VSX0tFWV9IRVJFIHNjb3V0YXBwL3Njb3V0LW1jcC1sb2NhbCIsImVudiI6e319)
 
 MAKE SURE to update the `SCOUT_API_KEY` value to your actual api key in
   `Arguments` in the Cursor Settings > MCP
+</details>
 
-#### VS Code Copilot
+<details>
+<summary>VS Code Copilot</summary>
+
 - [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server)
     - We recommend the "Add an MCP server to your workspace" option
+</details>
 
-#### Claude Desktop
-Add above JSON to config:
+<details>
+<summary>Claude Desktop</summary>
+
+Add the following to your claude config file:
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "scout-apm": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "--env", "SCOUT_API_KEY", "scoutapp/scout-mcp-local"],
+      "env": { "SCOUT_API_KEY": "your_scout_api_key_here"}
+    }
+  }
+}
+```
+
+</details>
 
 
 ### Token Usage
@@ -97,9 +120,12 @@ fixes right in your editor.
 ## Useful Prompts
 
 - "Summarize the available tools in the Scout Monitoring MCP."
-- "Find the slowest endpoints for app `my-app-name` in the last 7 days."
-- "Show me the highest-frequency errors for app Foo in the last 24 hours."
-- "Get any recent n+1 queries for app Bar"
+- "Find the slowest endpoints for app `my-app-name` in the last 7 days. Generate a table
+  with the results including the average response time, throughput, and P95 response time."
+- "Show me the highest-frequency errors for app `Foo` in the last 24 hours. Get the
+  latest error detail, examine the backtrace and suggest a fix."
+- "Get any recent n+1 insights for app `Bar`. Pull the specific trace by id and help me
+  optimize it based on the backtrace data."
 
 
 ## Local Development
