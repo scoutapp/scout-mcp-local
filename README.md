@@ -62,7 +62,7 @@ to your AI Assistant's config. Here is the shape of the JSON (the top-level key 
 <summary> Claude Code</summary>
 
 ```sh
-claude mcp add scoutmcp -e SCOUT_API_KEY=your_scout_api_key_here -- docker run --rm -i -e scoutapp/scout-mcp-local
+claude mcp add scoutmcp -e SCOUT_API_KEY=your_scout_api_key_here -- docker run --rm -i -e SCOUT_API_KEY scoutapp/scout-mcp-local
 ```
 </details>
 
