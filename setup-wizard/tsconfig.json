@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.build.json",
+
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "es2022",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "declaration": true,
+    "outDir": "dist"
+  },
+  "include": [
+    "__tests__",
+    "bin.ts",
+    "src/lib/**/*",
+    "src/**/*",
+  ],
+  "ts-node": {
+    "files": true
+  }
+}
