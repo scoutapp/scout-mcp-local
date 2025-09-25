@@ -3,12 +3,45 @@ name: Publish Setup Wizard to npm
 on:
   release:
     types: [published]
+  pull_request:
+    paths:
+      - 'setup-wizard/**'
 
 env:
   WORKING_DIRECTORY: setup-wizard
 
 jobs:
+  test-build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build package
+      run: npm run build
+
+    - name: Test publish (dry run)
+      run: npm publish --dry-run
+
+    - name: Check package contents
+      run: npm pack --dry-run
+
   publish:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
