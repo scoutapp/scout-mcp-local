@@ -1,7 +1,7 @@
 # Scout Monitoring MCP
 
-This repository contains code to locally run an MCP server that can access Scout
-Monitoring data via Scout's API. We provide a Docker image that can be pulled and run by
+This repository contains code to locally run an MCP server that can access [Scout
+Monitoring](https://www.scoutapm.com) data via Scout's API. We provide a Docker image that can be pulled and run by
 your AI Assistant to access Scout Monitoring data.
 
 This puts Scout Monitoring's performance and error data directly in the hands of your AI Assistant.
@@ -10,12 +10,13 @@ that the AI can use to target fixes right in your editor and codebase. N+1 queri
 slow queries, memory bloat, throughput issues - all your favorite performance problems surfaced
 and explained right where you are working.
 
-**If this helps you debug faster or ship with more confidence, :star: it!**
+**If this makes your life a tiny bit better, why not :star: it?!**
 
 ## Prerequisites
 
 You will need to have or create a Scout Monitoring account and obtain an API key.
-1. [Sign up](https://scoutapm.com/users/sign_up)
+1. [Sign
+   up](https://scoutapm.com/users/sign_up?utm_source=github&utm_medium=github&utm_campaign=scout-mcp-local)
 2. Install the Scout Agent in your application and send Scout data!
     - [Ruby](https://scoutapm.com/docs/ruby/setup)
     - [Python](https://scoutapm.com/docs/python/setup)

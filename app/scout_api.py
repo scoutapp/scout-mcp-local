@@ -219,6 +219,8 @@ class ScoutAPMAsync(ScoutAPMBase):
         if not self.client:
             if not self.api_key:
                 raise ValueError("API key is required")
+            headers = self._get_auth_headers()
+            headers["user-agent"] = "scout-mcp-local/0.1"
             self.client = httpx.AsyncClient(
                 headers=self._get_auth_headers(), timeout=9.0
             )
