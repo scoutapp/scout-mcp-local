@@ -54,8 +54,8 @@ const getClaudeDesktopConfigPath = (): string => {
   }
 };
 
-const setupClaudeCLI = async (agentKey: string): Promise<void> => {
-  console.log(chalk.blue('Setting up Scout MCP with Claude CLI...'));
+const setupClaudeCode = async (agentKey: string): Promise<void> => {
+  console.log(chalk.blue('Setting up Scout MCP with Claude Code...'));
   const command = `claude mcp add scout-apm -e SCOUT_API_KEY=${agentKey} -- docker run --rm -i -e SCOUT_API_KEY scoutapp/scout-mcp-local:latest`;
   
   console.log(chalk.yellow('This will run the following command:'));
@@ -72,11 +72,11 @@ const setupClaudeCLI = async (agentKey: string): Promise<void> => {
   }
   
   try {
-    console.log(chalk.blue('Adding Scout MCP server to Claude CLI...'));
+    console.log(chalk.blue('Adding Scout MCP server to Claude Code...'));
     const { stdout, stderr } = await execAsync(command);
     
     if (stdout) {
-      console.log(chalk.green('✓ Scout MCP successfully configured with Claude CLI!'));
+      console.log(chalk.green('✓ Scout MCP successfully configured with Claude Code!'));
       console.log(stdout);
     }
     
@@ -84,7 +84,7 @@ const setupClaudeCLI = async (agentKey: string): Promise<void> => {
       console.log(chalk.yellow('Warning:'), stderr);
     }
   } catch (error: any) {
-    console.log(chalk.red('✗ Failed to configure Scout MCP with Claude CLI'));
+    console.log(chalk.red('✗ Failed to configure Scout MCP with Claude Code'));
     console.log(chalk.red('Error:'), error.message);
     console.log(chalk.yellow('You can manually run this command:'));
     console.log(chalk.gray(command));
@@ -232,7 +232,7 @@ export async function setup(): Promise<void> {
       message: 'Which AI assistant are you using?',
       options: [
         { value: 'cursor', label: 'Cursor' },
-        { value: 'claude-cli', label: 'Claude CLI' },
+        { value: 'claude-code', label: 'Claude Code (CLI)' },
         { value: 'claude-desktop', label: 'Claude Desktop' },
         { value: 'manual', label: 'Manual setup (show JSON config)' }
       ]
@@ -243,8 +243,8 @@ export async function setup(): Promise<void> {
         await setupCursor(agentKey);
         break;
         
-      case 'claude-cli':
-        await setupClaudeCLI(agentKey);
+      case 'claude-code':
+        await setupClaudeCode(agentKey);
         break;
         
       case 'claude-desktop':
