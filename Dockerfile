@@ -5,21 +5,14 @@ WORKDIR /app
 # Install uv for faster dependency management
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
+# Copy project files
+COPY . .
 
-# Install dependencies
+# Install the package
 RUN uv sync --frozen
-
-# Copy source code
-COPY server.py ./
-COPY app ./app
-
-# Expose port if desired for local testing
-# EXPOSE 8999
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Run the MCP server
-CMD ["uv", "run", "python", "server.py"]
+# Run the MCP server using the main script
+CMD ["uv", "run", "scout-mcp"]

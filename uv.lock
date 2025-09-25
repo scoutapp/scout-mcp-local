@@ -665,7 +665,7 @@ wheels = [
 [[package]]
 name = "scout-mcp-local"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "httpx" },
     { name = "mcp", extra = ["cli"] },

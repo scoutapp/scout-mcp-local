@@ -1,6 +1,8 @@
 [project]
 name = "scout-mcp-local"
-author = "Scout Monitoring"
+maintainers = [
+  {name = "Scout Monitoring", email = "support@scoutapm.com"}
+]
 version = "0.1.0"
 description = "A local MCP for Scout Monitoring data interactions."
 readme = "README.md"
@@ -10,8 +12,11 @@ dependencies = [
     "mcp[cli]>=1.13.1",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[project.scripts]
+scout-mcp = "scout_mcp.main:main"
+
+[dependency-groups]
+dev = [
     "black>=25.1.0",
     "dotenv>=0.9.9",
     "flake8>=7.3.0",
@@ -23,12 +28,15 @@ dev-dependencies = [
     "taskipy>=1.14.1",
 ]
 
+[tool.uv]
+package = true
+
 [tool.taskipy.settings]
 dotenv = [".env"]
 
 [tool.taskipy.tasks]
 dev = { cmd = "dotenv run mcp dev inspector.py", help = "runs the local MCP server" }
-test = { cmd = "python -m pytest --cov=app --cov-report=html:coverage-html tests", help = "runs all unit tests" }
+test = { cmd = "python -m pytest --cov=scout_mcp --cov-report=html:coverage-html tests", help = "runs all unit tests" }
 mypy = { cmd = "mypy . --install-types --non-interactive --ignore-missing-imports", help = "Mypy" }
 flake8 = { cmd = "flake8 .", help = "confirms code style using flake8" }
 isort = { cmd = "isort --profile=black .", help = "Run isort" }
