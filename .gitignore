@@ -13,5 +13,5 @@ wheels/
 .env
 
 # Setup Wizard
-setup-wizard/dist
-setup-wizard/node_modules
+wizard/dist
+wizard/node_modules

@@ -1,17 +1,19 @@
 {
-  "name": "scout-mcp-installer",
+  "name": "@scout_apm/wizard",
   "version": "0.1.0",
-  "description": "Scout MCP Installer",
-  "main": "dist/scout-mcp-installer.js",
+  "description": "Scout Wizard",
+  "main": "dist/scout-wizard.js",
   "bin": {
-    "scout-mcp-installer": "./dist/scout-mcp-installer.js"
+    "scout-wizard": "./dist/wizard.js"
   },
   "scripts": {
-    "build": "vite build && chmod +x ./dist/scout-mcp-installer.js",
+    "build": "vite build && chmod +x ./dist/wizard.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "Scout APM",
+    "Scout",
+    "APM", 
+    "Monitoring",
     "MCP"
   ],
   "author": "Scout Monitoring",
