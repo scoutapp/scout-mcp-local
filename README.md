@@ -10,7 +10,7 @@ that the AI can use to target fixes right in your editor and codebase. N+1 queri
 slow queries, memory bloat, throughput issues - all your favorite performance problems surfaced
 and explained right where you are working.
 
-**If this helps you debug faster or ship with more confidence, :star: it!**
+**If this makes your life a tiny bit better, why not :star: it?!**
 
 ## Prerequisites
 
