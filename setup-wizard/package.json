@@ -14,7 +14,7 @@
     "Scout APM",
     "MCP"
   ],
-  "author": "",
+  "author": "Scout Monitoring",
   "license": "MIT",
   "type": "module",
   "dependencies": {
