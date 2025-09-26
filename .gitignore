@@ -11,3 +11,7 @@ wheels/
 .claude
 .coverage
 .env
+
+# Setup Wizard
+wizard/dist
+wizard/node_modules
