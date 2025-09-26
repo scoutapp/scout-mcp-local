@@ -5,10 +5,10 @@ on:
     types: [published]
   pull_request:
     paths:
-      - 'setup-wizard/**'
+      - 'wizard/**'
 
 env:
-  WORKING_DIRECTORY: setup-wizard
+  WORKING_DIRECTORY: wizard
 
 jobs:
   test-build:
