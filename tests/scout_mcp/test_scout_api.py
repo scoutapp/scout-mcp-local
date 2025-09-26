@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import httpx
 import pytest
 
-from app.scout_api import (
+from scout_mcp.scout_api import (
     Duration,
     ScoutAPMAPIError,
     ScoutAPMAsync,
@@ -98,7 +98,7 @@ class TestScoutAPMBase:
 
     def test_format_time(self):
         """Test time formatting."""
-        from app.scout_api import _format_time
+        from scout_mcp.scout_api import _format_time
 
         dt = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
         formatted = _format_time(dt)
@@ -106,7 +106,7 @@ class TestScoutAPMBase:
 
     def test_parse_time(self):
         """Test time parsing."""
-        from app.scout_api import _parse_time
+        from scout_mcp.scout_api import _parse_time
 
         parsed = _parse_time("2024-01-01T12:30:45Z")
         expected = datetime(2024, 1, 1, 12, 30, 45, tzinfo=timezone.utc)
@@ -347,7 +347,7 @@ class TestScoutAPMAsync:
 
         # Mock datetime.now to return a fixed time for testing
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
-        with patch("app.scout_api.datetime") as mock_datetime:
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
             # Configure the mock to behave like the real datetime module
             mock_datetime.now.return_value = fixed_now
             mock_datetime.fromisoformat = datetime.fromisoformat
@@ -373,7 +373,7 @@ class TestScoutAPMAsync:
         """Test get_endpoint_traces with date too old."""
         duration = make_duration("2023-12-31T00:00:00Z", "2024-01-01T00:00:00Z")
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
-        with patch("app.scout_api.datetime") as mock_datetime:
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
             # Configure the mock to behave like the real datetime module
             mock_datetime.now.return_value = fixed_now
             mock_datetime.fromisoformat = datetime.fromisoformat
@@ -404,7 +404,7 @@ class TestScoutAPMAsync:
         duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
-        with patch("app.scout_api.datetime") as mock_datetime:
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
             # Configure the mock to behave like the real datetime module
             mock_datetime.now.return_value = fixed_now
             mock_datetime.fromisoformat = datetime.fromisoformat
@@ -432,7 +432,7 @@ class TestScoutAPMAsync:
         duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
 
         fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
-        with patch("app.scout_api.datetime") as mock_datetime:
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
             # Configure the mock to behave like the real datetime module
             mock_datetime.now.return_value = fixed_now
             mock_datetime.fromisoformat = datetime.fromisoformat

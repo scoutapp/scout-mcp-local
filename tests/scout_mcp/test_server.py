@@ -1,4 +1,4 @@
-from app import server
+from scout_mcp import server
 
 
 def test_server():
