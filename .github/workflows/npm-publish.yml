@@ -34,9 +34,6 @@ jobs:
     - name: Build package
       run: npm run build
 
-    - name: Test publish (dry run)
-      run: npm publish --dry-run
-
     - name: Check package contents
       run: npm pack --dry-run
 

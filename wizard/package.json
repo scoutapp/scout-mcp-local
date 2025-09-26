@@ -4,7 +4,7 @@
   "description": "Scout Wizard",
   "main": "dist/scout-wizard.js",
   "bin": {
-    "scout-wizard": "./dist/wizard.js"
+    "scout-wizard": "dist/wizard.js"
   },
   "scripts": {
     "build": "vite build && chmod +x ./dist/wizard.js",
@@ -12,7 +12,7 @@
   },
   "keywords": [
     "Scout",
-    "APM", 
+    "APM",
     "Monitoring",
     "MCP"
   ],
