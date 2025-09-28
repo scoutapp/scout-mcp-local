@@ -28,6 +28,10 @@ dev = [
     "taskipy>=1.14.1",
 ]
 
+# Need to specify due to wizard dir/monorepo
+[tool.setuptools]
+packages = ["scout_mcp"]
+
 [tool.uv]
 package = true
 
