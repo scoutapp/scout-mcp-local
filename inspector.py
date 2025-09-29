@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from app import server
+from scout_mcp import server
 
 
 def load_key():
