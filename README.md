@@ -24,6 +24,9 @@ You will need to have or create a Scout Monitoring account and obtain an API key
     - If you are trying this out locally, make sure `monitor: true`, `errors_enabled: true`
       are set in your config for the best experience
 2. Visit [settings](https://scoutapm.com/settings) to get or create an API key
+    - This is _not_ your "Agent Key"; it's the "API Key" that can be created on the
+      Settings page
+    - This is a read-only key that can only access data in your account
 2. Install Docker. Instructions below assume you can start a Docker container
 
 **The MCP server will not currently start without an API key set, either in the
@@ -129,6 +132,19 @@ Combine Scout's MCP with your AI Assistant's other tools to:
 - Create rich GitHub/GitLab issues based on errors and performance data
 - Make JIRA fun - have your AI Assistant create tickets with all the details
 - Generate PRs that fix specific errors and performance problems
+
+### Tool
+
+The Scout MCP provides the following tools for accessing Scout APM data:
+
+- **`list_apps`** - List available Scout APM applications, with optional filtering by last active date
+- **`get_app_metrics`** - Get individual metric data (response_time, throughput, etc.) for a specific application
+- **`get_app_endpoints`** - Get all endpoints for an application with aggregated performance metrics
+- **`get_endpoint_metrics`** - Get timeseries metrics for a specific endpoint in an application
+- **`get_app_endpoint_traces`** - Get recent traces for an app filtered to a specific endpoint
+- **`get_app_trace`** - Get an individual trace with all spans and detailed execution information
+- **`get_app_error_groups`** - Get recent error groups for an app, optionally filtered by endpoint
+- **`get_app_insights`** - Get performance insights including N+1 queries, memory bloat, and slow queries
 
 
 ### Useful Prompts
