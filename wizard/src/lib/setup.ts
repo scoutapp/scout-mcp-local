@@ -14,9 +14,26 @@ const openUrl = async (url: string): Promise<void> => {
   await open(url);
 };
 
-const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * Prompts the user to confirm opening a URL and optionally opens it
+ * @param message - The confirmation message to show the user
+ * @param url - The URL to open if confirmed
+ * @param fallbackMessage - Message to show if user declines to open the URL
+ * @returns Promise<void>
+ */
+const promptAndOpenUrl = async (message: string, url: string, fallbackMessage: string): Promise<void> => {
+  const shouldOpen = await clack.confirm({
+    message,
+    initialValue: true
+  });
+  
+  if (shouldOpen) {
+    await openUrl(url);
+  } else {
+    console.log(chalk.yellow(fallbackMessage));
+  }
 };
+
 
 const mcpConfig = (agentKey: string = "your_scout_api_key_here") => {
   return {
@@ -114,12 +131,16 @@ const generateCursorDeeplink = (agentKey: string): string => {
  */
 const setupCursor = async (agentKey: string): Promise<void> => {
   console.log(chalk.blue('Setting up Scout MCP for Cursor...'));
-  console.log(chalk.yellow('Opening Cursor deeplink to install Scout MCP...'));
+  console.log(chalk.yellow('We\'ll open a Cursor deeplink to install Scout MCP.'));
   
   // Generate the dynamic Cursor deeplink with the actual API key
   const deeplink = generateCursorDeeplink(agentKey);
   
-  await openUrl(deeplink);
+  await promptAndOpenUrl(
+    'Press enter to open the Cursor deeplink',
+    deeplink,
+    'Please manually open Cursor and add the Scout MCP server configuration.'
+  );
   
   console.log(chalk.yellow('After clicking "Add Server" in Cursor, the Scout MCP will be configured with your API key automatically.'));
   console.log(chalk.blue('No further manual configuration should be needed!'));
@@ -190,8 +211,8 @@ export async function setup(): Promise<void> {
 
   const collectKey = async (): Promise<void> => {
     const key = await clack.text({
-      message: 'Please paste your Agent Key below:',
-      placeholder: 'Agent Key',
+      message: 'Please paste your API key below:',
+      placeholder: 'API key',
     });
     agentKey = key.toString();
   };
@@ -201,20 +222,25 @@ export async function setup(): Promise<void> {
 
   switch (action) {
     case 'signin':
-      console.log(chalk.blue(`Opening Scout APM settings page...`))
-      console.log(chalk.blue('Please copy your Agent Key before continuing.'));
-      // wait two seconds before opening the url 
-      await delay(2000);
-      openUrl(`${baseUrl}/settings`);
+      console.log(chalk.blue('We\'ll open the Scout APM settings page where you can copy your API key.'));
+      await promptAndOpenUrl(
+        'Press enter to open the Scout APM settings page',
+        `${baseUrl}/settings`,
+        `Please visit ${baseUrl}/settings to get your API key.`
+      );
       await collectKey();
       break;
       
     case 'signup':
-      console.log(chalk.blue('Opening Scout APM sign up page...'));
-      console.log(chalk.blue('After completing signup, please visit your settings page to get your Agent Key.'));
+      console.log(chalk.blue('We\'ll open the Scout APM sign up page.'));
+      console.log(chalk.blue('After completing signup, please visit your settings page to get your API Key.'));
       console.log(chalk.blue('Then return here to continue setup.'));
-      await delay(2000);
-      await openUrl(`${baseUrl}/users/sign_up?utm_source=mcp-setup&utm_medium=setup-wizard&utm_campaign=scout-mcp-local`);
+      
+      await promptAndOpenUrl(
+        'Press enter to open the Scout APM sign up page',
+        `${baseUrl}/users/sign_up?utm_source=mcp-setup&utm_medium=setup-wizard&utm_campaign=scout-mcp-local`,
+        `Please visit ${baseUrl}/users/sign_up to create your account.`
+      );
       await collectKey();
       break;
       
