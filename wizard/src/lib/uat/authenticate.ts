@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { createHash, randomBytes } from 'node:crypto';
-import clack from "@/lib/utils/clack";
+import clack from '@/lib/utils/clack';
 import { getBaseUrl, openUrl } from '@/lib/utils/shared';
 
 interface UatOrgResponse {
-  orgs: Array<{ id: number; name: string; }>;
+  orgs: Array<{ id: number; name: string }>;
 }
 
 interface UatAuthCheckResponse {
@@ -28,18 +28,14 @@ const createVerifierAndChallenge = (): VerifierChallenge => {
   return { verifier, challenge };
 };
 
-const sleep = (ms: number): Promise<void> => 
-  new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Fetch with retry.
- *
- * @param url - The URL to fetch
- * @param opts - Fetch options
- * @param tries - How many times to try
- * @param delayMs - Delay in ms between retries
- */
-const fetchWithRetry = async (url: string, opts?: RequestInit, tries: number = 2, delayMs: number = 1000): Promise<Response> => {
+const fetchWithRetry = async (
+  url: string,
+  opts?: RequestInit,
+  tries: number = 2,
+  delayMs: number = 1000
+): Promise<Response> => {
   for (let i = 0; i < tries; i++) {
     try {
       return await fetch(url, opts);
@@ -54,8 +50,8 @@ const fetchWithRetry = async (url: string, opts?: RequestInit, tries: number = 2
   }
 
   // TS wants a return here.
-  throw new Error("Unreachable");
-}
+  throw new Error('Unreachable');
+};
 
 /**
  * Post UAT form data to the given URL. If we fail, fallback to manual.
@@ -74,7 +70,7 @@ const postForm = async (url: string, data: Record<string, any> = {}): Promise<Re
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData
+    body: formData,
   });
 };
 
@@ -106,10 +102,12 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
 
     try {
       while (Date.now() - startTime < timeoutMs) {
-        const checkResponse = await fetchWithRetry(`${baseUrl}/uat/auth/check/${firstChallengeB64}`);
+        const checkResponse = await fetchWithRetry(
+          `${baseUrl}/uat/auth/check/${firstChallengeB64}`
+        );
 
         if (checkResponse.ok) {
-          const checkData = await checkResponse.json() as UatAuthCheckResponse;
+          const checkData = (await checkResponse.json()) as UatAuthCheckResponse;
 
           if (checkData.has_authenticated) {
             spinner.succeed('Authentication successful! \n');
@@ -117,7 +115,7 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
             break;
           }
         }
-        
+
         await sleep(5000); // Poll every 5 seconds
       }
     } catch (error) {
@@ -139,14 +137,14 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
     console.log(chalk.blue('Getting organizations...'));
     const orgsResponse = await postForm(`${baseUrl}/uat/get_orgs`, {
       verify_token: firstVerifierB64,
-      challenge_token: secondChallengeB64
+      challenge_token: secondChallengeB64,
     });
 
     if (!orgsResponse.ok) {
       throw new Error(`Failed to get organizations: ${orgsResponse.status}`);
     }
 
-    const orgsData = await orgsResponse.json() as UatOrgResponse;
+    const orgsData = (await orgsResponse.json()) as UatOrgResponse;
 
     if (!orgsData.orgs || orgsData.orgs.length === 0) {
       throw new Error('No organizations found');
@@ -161,8 +159,8 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
         message: 'Select an organization:',
         options: orgsData.orgs.map(org => ({
           value: org.id.toString(),
-          label: org.name
-        }))
+          label: org.name,
+        })),
       });
       selectedOrgId = parseInt(orgChoice as string);
     }
@@ -174,14 +172,14 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
 
     const keysResponse = await postForm(`${baseUrl}/uat/get_keys`, {
       verify_token: secondVerifierB64,
-      org_id: selectedOrgId
+      org_id: selectedOrgId,
     });
 
     if (!keysResponse.ok) {
       throw new Error(`Failed to get keys: ${keysResponse.status}`);
     }
 
-    const keysData = await keysResponse.json() as UatKeyResponse;
+    const keysData = (await keysResponse.json()) as UatKeyResponse;
 
     if (!keysData.api_key) {
       throw new Error('No API key received');
@@ -189,7 +187,6 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
 
     console.log(chalk.green('Gathering keys successful!'));
     return keysData;
-
   } catch (error: any) {
     console.log(chalk.red('✗ Authentication failed:'), error.message);
     console.log(chalk.yellow('Falling back to manual API key entry...'));

@@ -1,0 +1,7 @@
+pre-commit:
+  parallel: true
+  commands:
+    style:
+      root: "wizard/"
+      glob: '*.{ts,js,json,yml,yaml,md}'
+      run: npm run style

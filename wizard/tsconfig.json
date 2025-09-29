@@ -9,12 +9,7 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "include": [
-    "tests",
-    "bin.ts",
-    "src/lib/**/*",
-    "src/**/*",
-  ],
+  "include": ["tests", "bin.ts", "src/lib/**/*", "src/**/*"],
   "ts-node": {
     "files": true
   }

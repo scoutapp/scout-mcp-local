@@ -1,6 +1,6 @@
 {
   "name": "@scout_apm/wizard",
-  "version": "2025.10.3",
+  "version": "0.2.0",
   "description": "Scout Wizard",
   "main": "dist/scout-wizard.js",
   "bin": {
@@ -11,7 +11,15 @@
   },
   "scripts": {
     "build": "vite build && chmod +x ./dist/wizard.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "stylize": "npm run lint && npm run format",
+    "style": "npm run lint && npm run format:check",
+    "check": "npm run style && npm test",
+    "prepare": "lefthook install"
   },
   "keywords": [
     "Scout",
@@ -29,11 +37,17 @@
     "ora": "^8.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.36.0",
     "@types/jsdom": "^21.1.0",
     "@types/node": "^24.0.0",
     "@vitest/ui": "^3.2.4",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^26.1.0",
+    "lefthook": "^1.13.6",
+    "prettier": "^3.6.2",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.45.0",
     "vite": "^6.3.0",
     "vite-tsconfig-paths": "^5.1.4"
   }

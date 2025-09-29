@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import clack from "@/lib/utils/clack";
+import clack from '@/lib/utils/clack';
 
 /**
  * Prompts the user to confirm opening a URL and optionally opens it
@@ -8,12 +8,16 @@ import clack from "@/lib/utils/clack";
  * @param fallbackMessage - Message to show if user declines to open the URL
  * @returns Promise<void>
  */
-export const promptAndOpenUrl = async (message: string, url: string, fallbackMessage: string): Promise<void> => {
+export const promptAndOpenUrl = async (
+  message: string,
+  url: string,
+  fallbackMessage: string
+): Promise<void> => {
   const shouldOpen = await clack.confirm({
     message,
-    initialValue: true
+    initialValue: true,
   });
-  
+
   if (shouldOpen) {
     await openUrl(url);
   } else {
@@ -21,11 +25,19 @@ export const promptAndOpenUrl = async (message: string, url: string, fallbackMes
   }
 };
 
+/**
+ * Opens a URL in the default browser
+ * @param url - The URL to open
+ */
 export const openUrl = async (url: string): Promise<void> => {
   const open = (await import('open')).default;
   await open(url);
 };
 
+/**
+ * Get the base URL for Scout APM, either from env or default
+ * @returns string - The base URL
+ */
 export const getBaseUrl = (): string => {
   return process.env.SCOUT_HOST || 'https://scoutapm.com';
 };
