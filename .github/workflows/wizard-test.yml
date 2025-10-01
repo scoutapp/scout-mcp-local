@@ -1,0 +1,39 @@
+name: Wizard Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wizard/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'wizard/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22, 24]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: wizard/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: wizard
+
+    - name: Run tests
+      run: npm test
+      working-directory: wizard
