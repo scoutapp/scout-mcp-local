@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "vite build && chmod +x ./dist/wizard.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "keywords": [
     "Scout",
@@ -30,9 +30,13 @@
     "ora": "^8.2.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^27.0.0",
     "@types/node": "^24.0.0",
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^27.0.0",
     "typescript": "^5.0.0",
     "vite": "^7.1.5",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }

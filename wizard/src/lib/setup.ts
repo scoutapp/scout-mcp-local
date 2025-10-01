@@ -90,7 +90,7 @@ const postForm = async (url: string, data: Record<string, any> = {}): Promise<Re
  * @param authType - 'sign_in' or 'sign_up'
  * @returns Promise<UatKeyResponse | null>
  */
-const authenticateWithUat = async (authType: string): Promise<UatKeyResponse | null> => {
+export const authenticateWithUat = async (authType: string): Promise<UatKeyResponse | null> => {
   try {
     const baseUrl = getBaseUrl();
     console.log(chalk.blue('Starting authentication flow...'));
