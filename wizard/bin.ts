@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { setup } from './src/lib/setup';
+import { setup } from '@/lib/setup';
 
 async function main() {
   await setup();

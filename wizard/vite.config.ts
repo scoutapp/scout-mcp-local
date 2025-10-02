@@ -1,4 +1,4 @@
-import path from "path";
+import path from 'path';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
@@ -20,7 +20,7 @@ export default defineConfig({
       external: [
         'node:process',
         'node:buffer',
-        'node:path', 
+        'node:path',
         'node:url',
         'node:util',
         'node:child_process',
@@ -31,7 +31,7 @@ export default defineConfig({
         'chalk',
         '@clack/core',
         '@clack/prompts',
-        'open'
+        'open',
       ],
     },
   },

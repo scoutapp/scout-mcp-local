@@ -1,18 +1,21 @@
 import chalk from 'chalk';
-import clack from "@/lib/utils/clack";
+import clack from '@/lib/utils/clack';
 import { promptAndOpenUrl, getBaseUrl } from '@/lib/utils/shared';
 import { setupClaudeCode, setupCursor, setupClaudeDesktop, mcpConfig } from './mcp/mcp';
 import { authenticateWithUat } from './uat/authenticate';
 import type { UatKeyResponse } from './uat/authenticate';
 
+/**
+ * Main setup function to guide user through configuration
+ */
 export async function setup(): Promise<void> {
   const action = await clack.select({
     message: 'Are you currently a Scout APM customer?',
     options: [
       { value: 'sign_in', label: 'Yes' },
       { value: 'sign_up', label: 'No' },
-      { value: 'exit', label: 'Exit' }
-    ]
+      { value: 'exit', label: 'Exit' },
+    ],
   });
 
   if (action === 'exit') {
@@ -38,7 +41,9 @@ export async function setup(): Promise<void> {
       return key.toString();
     };
 
-    console.log(chalk.blue('We\'ll open the Scout APM settings page where you can copy your API key.'));
+    console.log(
+      chalk.blue("We'll open the Scout APM settings page where you can copy your API key.")
+    );
     await promptAndOpenUrl(
       'Press enter to open the Scout APM settings page',
       `${baseUrl}/settings`,
@@ -55,28 +60,30 @@ export async function setup(): Promise<void> {
         { value: 'cursor', label: 'Cursor' },
         { value: 'claude-code', label: 'Claude Code (CLI)' },
         { value: 'claude-desktop', label: 'Claude Desktop' },
-        { value: 'manual', label: 'Manual setup (show JSON config)' }
-      ]
+        { value: 'manual', label: 'Manual setup (show JSON config)' },
+      ],
     });
 
     switch (aiAssistant) {
       case 'cursor':
         await setupCursor(agentKey);
         break;
-        
+
       case 'claude-code':
         await setupClaudeCode(agentKey);
         break;
-        
+
       case 'claude-desktop':
         await setupClaudeDesktop(agentKey);
         break;
-        
+
       case 'manual':
-        console.log(chalk.green('Please paste the following into your MCP config to complete setup:'));
+        console.log(
+          chalk.green('Please paste the following into your MCP config to complete setup:')
+        );
         console.log(JSON.stringify(mcpConfig(agentKey), null, 2));
         break;
-        
+
       default:
         console.log(chalk.red('Invalid selection'));
     }
