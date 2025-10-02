@@ -44,10 +44,38 @@ The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/
 Of course, you can always clone this repo and run the MCP server directly; `uv` or other
 environment management tools are recommended.
 
+## Setup Wizard
+
+The simplest way to configure and start using the Scout MCP is with our interactive setup wizard:
+
+Run via npx:
+```bash
+npx @scout_apm/wizard
+```
+
+Build and run from source:
+```bash
+cd ./wizard
+npm install
+npm run build
+node dist/wizard.js
+```
+
+The wizard will guide you through:
+- Selecting your AI coding platform (Cursor, Claude Code, Claude Desktop)
+- Entering your Scout API key
+- Automatically configuring the MCP server settings
+
+### Supported Platforms
+
+The wizard currently supports setup for:
+- **Cursor** - Automatically configures MCP settings
+- **Claude Code (CLI)** - Provides the correct command to run
+- **Claude Desktop** - Updates the configuration file for Windows/Mac
 
 ### Configure a local Client (e.g. Claude/Cursor/VS Code Copilot)
 
-Usually this just means supplying a command to run the MCP server with your API key in the environment
+If you would like to configure the MCP manually, this usually just means supplying a command to run the MCP server with your API key in the environment
 to your AI Assistant's config. Here is the shape of the JSON (the top-level key varies):
 
 ```json
