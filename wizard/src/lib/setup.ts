@@ -1,11 +1,11 @@
-import clack from "./utils/clack";
 import chalk from 'chalk';
-import { exec } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
 import ora from 'ora';
+import clack from "./utils/clack";
+import { execAsync } from './utils/execAsync';
 
 interface UatOrgResponse {
   orgs: Array<{ id: number; name: string; }>;
@@ -90,7 +90,7 @@ const postForm = async (url: string, data: Record<string, any> = {}): Promise<Re
  * @param authType - 'sign_in' or 'sign_up'
  * @returns Promise<UatKeyResponse | null>
  */
-const authenticateWithUat = async (authType: string): Promise<UatKeyResponse | null> => {
+export const authenticateWithUat = async (authType: string): Promise<UatKeyResponse | null> => {
   try {
     const baseUrl = getBaseUrl();
     console.log(chalk.blue('Starting authentication flow...'));
@@ -240,18 +240,6 @@ const mcpConfig = (agentKey: string = "your_scout_api_key_here") => {
       }
     }
   };
-};
-
-const execAsync = (command: string): Promise<{ stdout: string; stderr: string }> => {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve({ stdout, stderr });
-      }
-    });
-  });
 };
 
 const getClaudeDesktopConfigPath = (): string => {

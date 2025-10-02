@@ -6,13 +6,12 @@
   "bin": {
     "scout-wizard": "dist/wizard.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/scoutapp/scout-mcp-local.git"
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "vite build && chmod +x ./dist/wizard.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "keywords": [
     "Scout",
@@ -30,9 +29,12 @@
     "ora": "^8.2.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.0",
     "@types/node": "^24.0.0",
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^26.1.0",
     "typescript": "^5.0.0",
-    "vite": "^7.1.5",
+    "vite": "^6.3.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

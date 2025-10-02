@@ -10,7 +10,7 @@
     "outDir": "dist"
   },
   "include": [
-    "__tests__",
+    "tests",
     "bin.ts",
     "src/lib/**/*",
     "src/**/*",
