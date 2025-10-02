@@ -36,7 +36,7 @@ jobs:
 
       - name: Validate version
         run: |
-          node -e '
+          npm install semver && node -e '
             const semver = require("semver");
             const pkg = require("./wizard/package.json");
             if (!semver.valid(pkg.version)) {
