@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as clack from '@clack/prompts'
 import ora from 'ora'
-import { authenticateWithUat } from '@/lib/setup'
+import { authenticateWithUat } from '@/lib/uat/authenticate'
 
 // Get mocked open function
 const mockOpen = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
