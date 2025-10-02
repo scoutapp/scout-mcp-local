@@ -1,10 +1,14 @@
 {
   "name": "@scout_apm/wizard",
-  "version": "2025.10.2",
+  "version": "2025.10.2.1",
   "description": "Scout Wizard",
   "main": "dist/scout-wizard.js",
   "bin": {
     "scout-wizard": "dist/wizard.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scoutapp/scout-mcp-local.git"
   },
   "scripts": {
     "build": "vite build && chmod +x ./dist/wizard.js",
