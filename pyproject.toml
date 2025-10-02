@@ -3,7 +3,7 @@ name = "scout-mcp-local"
 maintainers = [
   {name = "Scout Monitoring", email = "support@scoutapm.com"}
 ]
-version = "2025.10.02.3"
+version = "2025.10.03"
 description = "A local MCP for Scout Monitoring data interactions."
 readme = "README.md"
 requires-python = ">=3.10"
