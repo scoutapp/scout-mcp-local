@@ -1,6 +1,6 @@
 {
   "name": "@scout_apm/wizard",
-  "version": "2025.10.2.1",
+  "version": "2025.10.2.3",
   "description": "Scout Wizard",
   "main": "dist/scout-wizard.js",
   "bin": {
