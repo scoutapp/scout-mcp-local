@@ -10,7 +10,11 @@ vi.mock('node:child_process', async () => {
   const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process')
   return {
     ...actual,
-    exec: vi.fn()
+    exec: vi.fn((cmd: string, cb: Function) => {
+      console.log("exec called with:", cmd);
+      cb(null, 'Successfully added MCP server', '')
+      return {} as any
+    })
   }
 })
 

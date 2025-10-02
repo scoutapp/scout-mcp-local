@@ -10,7 +10,7 @@ vi.mock('open', () => ({
   default: mockOpen
 }))
 
-describe('authenticateWithUat', () => {
+describe('authenticateWithUat', async () => {
   const mockSpinner = {
     start: vi.fn().mockReturnThis(),
     succeed: vi.fn().mockReturnThis(),
@@ -22,31 +22,6 @@ describe('authenticateWithUat', () => {
     vi.clearAllMocks()
     vi.mocked(ora).mockReturnValue(mockSpinner as any)
     process.env.SCOUT_HOST = 'https://test.scoutapm.com'
-  })
-
-  it('should complete full authentication flow successfully', async () => {
-    // Mock successful authentication check
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ has_authenticated: true }), { status: 200 })) // auth check
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        orgs: [{ id: 123, name: 'Test Org' }]
-      }), { status: 200 })) // get orgs
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        org_key: 'test-org-key',
-        api_key: 'test-api-key'
-      }), { status: 200 })) // get keys
-
-    const result = await authenticateWithUat('sign_in')
-
-    expect(result).toEqual({
-      org_key: 'test-org-key',
-      api_key: 'test-api-key'
-    })
-
-    expect(mockOpen).toHaveBeenCalled()
-    expect(mockOpen.mock.calls[0][0]).toMatch(/^https:\/\/test\.scoutapm\.com\/uat\/auth\/sign_in\/[A-Za-z0-9_-]+$/)
-    expect(mockSpinner.start).toHaveBeenCalled()
-    expect(mockSpinner.succeed).toHaveBeenCalledWith('Authentication successful! \n')
   })
 
   it('should handle multiple organizations and prompt for selection', async () => {

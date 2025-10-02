@@ -1,11 +1,11 @@
-import clack from "./utils/clack";
 import chalk from 'chalk';
-import { exec } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
 import ora from 'ora';
+import clack from "./utils/clack";
+import { execAsync } from './utils/execAsync';
 
 interface UatOrgResponse {
   orgs: Array<{ id: number; name: string; }>;
@@ -240,18 +240,6 @@ const mcpConfig = (agentKey: string = "your_scout_api_key_here") => {
       }
     }
   };
-};
-
-const execAsync = (command: string): Promise<{ stdout: string; stderr: string }> => {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve({ stdout, stderr });
-      }
-    });
-  });
 };
 
 const getClaudeDesktopConfigPath = (): string => {
