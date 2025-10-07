@@ -15,4 +15,4 @@ RUN uv sync --frozen
 ENV PYTHONUNBUFFERED=1
 
 # Run the MCP server using the main script
-CMD ["uv", "run", "scout-mcp"]
+CMD ["uv", "run", "scout-mcp-local"]
