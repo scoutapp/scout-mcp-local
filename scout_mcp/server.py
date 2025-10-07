@@ -2,6 +2,7 @@
 import json
 import logging
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -36,6 +37,36 @@ def calculate_percentage_change(old_value: float, new_value: float) -> float:
 def list_available_metrics() -> set[str]:
     """List all available metrics for the Scout APM API."""
     return scout_api.VALID_METRICS
+
+
+@mcp.resource("scoutapm://config-templates/{framework}")
+def get_framework_template(framework: str) -> str:
+    """Get the Scout APM setup instructions and configuration for a specific framework.
+    
+    Supported frameworks: rails, django, flask, fastapi
+    """
+    templates_dir = Path(__file__).parent / "config_templates"
+    template_path = templates_dir / f"{framework}.md"
+    
+    if template_path.exists():
+        return template_path.read_text()
+    else:
+        return f"Template not found for framework: {framework}\n\nAvailable frameworks: rails, django, flask, fastapi"
+
+
+@mcp.resource("scoutapm://config-templates/list")
+def list_config_templates() -> dict[str, str]:
+    """List all available Scout APM configuration templates."""
+    templates_dir = Path(__file__).parent / "config_templates"
+    templates = {}
+    
+    if templates_dir.exists():
+        for template_file in templates_dir.iterdir():
+            if template_file.is_file():
+                framework = template_file.stem
+                templates[framework] = f"scoutapm://config-templates/{framework}"
+    
+    return templates
 
 
 @mcp.tool(name="list_apps")
