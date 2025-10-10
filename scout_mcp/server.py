@@ -39,45 +39,37 @@ def list_available_metrics() -> set[str]:
     return scout_api.VALID_METRICS
 
 
-@mcp.resource("scoutapm://config-resources/{library_name}")
-def get_config_instructions(library_name: str) -> str:
-    """Get the Scout APM setup instructions and configuration for a specific library or framework.
-
-    Always get the setup instructions from this resource when asked to instrument 
-    Scout in an application.
-
-    This provides official, tested configuration instructions that should be followed exactly. 
-    Supported configurations:
+def _load_setup_instructions(framework: str) -> str:
+    """Internal helper to load setup instructions for a framework.
     
-    Web Frameworks:
-    - bottle: Bottle web framework
-    - dash: Plotly Dash (built on Flask)
-    - django: Django web framework
-    - falcon: Falcon web framework
-    - fastapi: FastAPI (async web framework)
-    - flask: Flask web framework
-    - hug: Hug API framework
-    - rails: Ruby on Rails
-    - starlette: Starlette ASGI framework
+    Args:
+        framework: The framework or library name (e.g., "fastapi", "django", "celery")
     
-    Background Job Processing:
-    - celery: Celery distributed task queue
-    - dramatiq: Dramatiq background task processing
-    - huey: Huey task queue
-    - rq: Redis Queue (RQ)
-    
-    Database/ORM:
-    - sqlalchemy: SQLAlchemy ORM
-
+    Returns:
+        Setup instructions markdown content or error message with available frameworks.
     """
     templates_dir = Path(__file__).parent / "config_resources"
-    template_path = templates_dir / f"{library_name}.md"
+    template_path = templates_dir / f"{framework.lower()}.md"
     
     if template_path.exists():
         return template_path.read_text()
     else:
         available = [f.stem for f in templates_dir.iterdir() if f.is_file() and f.suffix == ".md"]
-        return f"Configuration not found for: {library_name}\n\nAvailable configurations: {', '.join(sorted(available))}"
+        return f"Configuration not found for: {framework}\n\nAvailable frameworks: {', '.join(sorted(available))}"
+
+
+@mcp.resource("scoutapm://config-resources/{library_name}")
+def config_resource_handler(library_name: str) -> str:
+    """Resource handler: Get Scout APM setup instructions for a specific library/framework.
+    
+    This provides official, tested configuration instructions. 
+    
+    Supported frameworks:
+    - Web: bottle, dash, django, falcon, fastapi, flask, hug, rails, starlette
+    - Background Jobs: celery, dramatiq, huey, rq  
+    - Database: sqlalchemy
+    """
+    return _load_setup_instructions(library_name)
 
 
 @mcp.resource("scoutapm://config-resources/list")
@@ -102,15 +94,15 @@ def list_config_resources() -> dict[str, str]:
 
 @mcp.tool(name="get_scout_setup_instructions")
 def get_scout_setup_instructions(framework: str) -> str:
-    """Get step-by-step Scout APM setup instructions for a specific framework or library.
+    """Get step-by-step instructions to instrument Scout APM in a specific framework or library.
     
-    Always use this tool first when asked to instrument Scout APM in an application.
+    Always use this tool first when asked to setup/instrument/configure Scout APM in an application.
     This provides official, tested configuration instructions that should be followed exactly.
     
     Supported frameworks:
     - Web: bottle, dash, django, falcon, fastapi, flask, hug, rails, starlette
     - Background Jobs: celery, dramatiq, huey, rq  
-    - Database: sqlalchem
+    - Database: sqlalchemy
     
     Args:
         framework: The framework or library name (e.g., "fastapi", "django", "celery")
@@ -118,14 +110,7 @@ def get_scout_setup_instructions(framework: str) -> str:
     Returns:
         Complete setup instructions including installation, configuration, and examples.
     """
-    templates_dir = Path(__file__).parent / "config_resources"
-    template_path = templates_dir / f"{framework.lower()}.md"
-    
-    if template_path.exists():
-        return template_path.read_text()
-    else:
-        available = [f.stem for f in templates_dir.iterdir() if f.is_file() and f.suffix == ".md"]
-        return f"Configuration not found for: {framework}\n\nAvailable frameworks: {', '.join(sorted(available))}\n\nUse one of these names with this tool to get setup instructions."
+    return _load_setup_instructions(framework)
 
 
 @mcp.tool(name="list_apps")
