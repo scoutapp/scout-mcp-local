@@ -178,8 +178,8 @@ The Scout MCP provides the following tools for accessing Scout APM data:
 
 The Scout MCP provides configuration templates as resources that your AI assistant can read and apply:
 
-- **`scoutapm://config-templates/{framework}`** - Setup instructions for any framework (rails, django, flask, fastapi)
-- **`scoutapm://config-templates/list`** - List all available configuration templates
+- **`scoutapm://config-resources/{framework}`** - Setup instructions for any framework (rails, django, flask, fastapi)
+- **`scoutapm://config-resources/list`** - List all available configuration templates
 - **`scoutapm://metrics`** - List of all available metrics for Scout APM
 
 
