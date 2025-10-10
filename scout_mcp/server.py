@@ -39,32 +39,59 @@ def list_available_metrics() -> set[str]:
     return scout_api.VALID_METRICS
 
 
-@mcp.resource("scoutapm://config-resources/{framework}")
-def get_framework_template(framework: str) -> str:
-    """Get the Scout APM setup instructions and configuration for a specific framework.
+@mcp.resource("scoutapm://config-resources/{library_name}")
+def get_config_resource(library_name: str) -> str:
+    """Get the Scout APM setup instructions and configuration for a specific library or framework.
     
-    Supported frameworks: rails, django, flask, fastapi
+    Supported configurations:
+    
+    Web Frameworks:
+    - bottle: Bottle web framework
+    - dash: Plotly Dash (built on Flask)
+    - django: Django web framework
+    - falcon: Falcon web framework
+    - fastapi: FastAPI (async web framework)
+    - flask: Flask web framework
+    - hug: Hug API framework
+    - rails: Ruby on Rails
+    - starlette: Starlette ASGI framework
+    
+    Background Job Processing:
+    - celery: Celery distributed task queue
+    - dramatiq: Dramatiq background task processing
+    - huey: Huey task queue
+    - rq: Redis Queue (RQ)
+    
+    Database/ORM:
+    - sqlalchemy: SQLAlchemy ORM
+
     """
     templates_dir = Path(__file__).parent / "config_resources"
-    template_path = templates_dir / f"{framework}.md"
+    template_path = templates_dir / f"{library_name}.md"
     
     if template_path.exists():
         return template_path.read_text()
     else:
-        return f"Template not found for framework: {framework}\n\nAvailable frameworks: rails, django, flask, fastapi"
+        available = [f.stem for f in templates_dir.iterdir() if f.is_file() and f.suffix == ".md"]
+        return f"Configuration not found for: {library_name}\n\nAvailable configurations: {', '.join(sorted(available))}"
 
 
 @mcp.resource("scoutapm://config-resources/list")
 def list_config_resources() -> dict[str, str]:
-    """List all available Scout APM configuration templates."""
+    """List all available Scout APM configuration templates.
+    
+    Returns a dictionary mapping library/framework names to their resource URIs.
+    Use this to discover what configuration guides are available before fetching
+    a specific one with scoutapm://config-resources/{library_name}.
+    """
     templates_dir = Path(__file__).parent / "config_resources"
     templates = {}
     
     if templates_dir.exists():
         for template_file in templates_dir.iterdir():
-            if template_file.is_file():
-                framework = template_file.stem
-                templates[framework] = f"scoutapm://config-resources/{framework}"
+            if template_file.is_file() and template_file.suffix == ".md":
+                library_name = template_file.stem
+                templates[library_name] = f"scoutapm://config-resources/{library_name}"
     
     return templates
 
