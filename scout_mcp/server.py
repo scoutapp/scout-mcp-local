@@ -40,9 +40,13 @@ def list_available_metrics() -> set[str]:
 
 
 @mcp.resource("scoutapm://config-resources/{library_name}")
-def get_config_resource(library_name: str) -> str:
+def get_config_instructions(library_name: str) -> str:
     """Get the Scout APM setup instructions and configuration for a specific library or framework.
-    
+
+    Always get the setup instructions from this resource when asked to instrument 
+    Scout in an application.
+
+    This provides official, tested configuration instructions that should be followed exactly. 
     Supported configurations:
     
     Web Frameworks:
@@ -94,6 +98,34 @@ def list_config_resources() -> dict[str, str]:
                 templates[library_name] = f"scoutapm://config-resources/{library_name}"
     
     return templates
+
+
+@mcp.tool(name="get_scout_setup_instructions")
+def get_scout_setup_instructions(framework: str) -> str:
+    """Get step-by-step Scout APM setup instructions for a specific framework or library.
+    
+    Always use this tool first when asked to instrument Scout APM in an application.
+    This provides official, tested configuration instructions that should be followed exactly.
+    
+    Supported frameworks:
+    - Web: bottle, dash, django, falcon, fastapi, flask, hug, rails, starlette
+    - Background Jobs: celery, dramatiq, huey, rq  
+    - Database: sqlalchem
+    
+    Args:
+        framework: The framework or library name (e.g., "fastapi", "django", "celery")
+    
+    Returns:
+        Complete setup instructions including installation, configuration, and examples.
+    """
+    templates_dir = Path(__file__).parent / "config_resources"
+    template_path = templates_dir / f"{framework.lower()}.md"
+    
+    if template_path.exists():
+        return template_path.read_text()
+    else:
+        available = [f.stem for f in templates_dir.iterdir() if f.is_file() and f.suffix == ".md"]
+        return f"Configuration not found for: {framework}\n\nAvailable frameworks: {', '.join(sorted(available))}\n\nUse one of these names with this tool to get setup instructions."
 
 
 @mcp.tool(name="list_apps")
