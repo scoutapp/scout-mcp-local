@@ -161,7 +161,7 @@ Combine Scout's MCP with your AI Assistant's other tools to:
 - Make JIRA fun - have your AI Assistant create tickets with all the details
 - Generate PRs that fix specific errors and performance problems
 
-### Tool
+### Tools
 
 The Scout MCP provides the following tools for accessing Scout APM data:
 
@@ -174,9 +174,22 @@ The Scout MCP provides the following tools for accessing Scout APM data:
 - **`get_app_error_groups`** - Get recent error groups for an app, optionally filtered by endpoint
 - **`get_app_insights`** - Get performance insights including N+1 queries, memory bloat, and slow queries
 
+### Resources
+
+The Scout MCP provides configuration templates as resources that your AI assistant can read and apply:
+
+- **`scoutapm://config-resources/{framework}`** - Setup instructions for supported framework or library (rails, django, flask, fastapi)
+- **`scoutapm://config-resources/list`** - List all available configuration templates
+- **`scoutapm://metrics`** - List of all available metrics for Scout APM
+
 
 ### Useful Prompts
 
+#### Setup & Configuration
+- "Help me set up Scout monitoring for my Rails application"
+- "Create a Scout APM config file for my Django project with key ABC123"
+
+#### Performance & Monitoring
 - "Summarize the available tools in the Scout Monitoring MCP."
 - "Find the slowest endpoints for app `my-app-name` in the last 7 days. Generate a table
   with the results including the average response time, throughput, and P95 response time."
