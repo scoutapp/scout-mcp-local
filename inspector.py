@@ -1,4 +1,5 @@
 """Used by MCP Inspector for development connection."""
+
 import logging
 import os
 import sys

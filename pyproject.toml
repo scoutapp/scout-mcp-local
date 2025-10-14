@@ -44,6 +44,8 @@ test = { cmd = "python -m pytest --cov=scout_mcp --cov-report=html:coverage-html
 mypy = { cmd = "mypy . --install-types --non-interactive --ignore-missing-imports", help = "Mypy" }
 flake8 = { cmd = "flake8 .", help = "confirms code style using flake8" }
 isort = { cmd = "isort --profile=black .", help = "Run isort" }
+black = { cmd = "black .", help = "Run black formatter" }
+format = { cmd = "task black && task isort", help = "Autofix formatting and import issues" }
 djlint = { cmd = "djlint . --extension html --reformat", help = "Run djlint on templates" }
 lint = { cmd = "task flake8 && task mypy && task isort", help = "Run all linters" }
 check = { cmd = "task flake8 && task mypy && task isort && task test", help = "Run all checks" }
