@@ -1,7 +1,7 @@
-# 2025-09-04T11:00:00Z
-import json
 import logging
+import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -36,6 +36,87 @@ def calculate_percentage_change(old_value: float, new_value: float) -> float:
 def list_available_metrics() -> set[str]:
     """List all available metrics for the Scout APM API."""
     return scout_api.VALID_METRICS
+
+
+def _load_setup_instructions(framework: str) -> str:
+    """Internal helper to load setup instructions for a framework.
+
+    Args:
+        framework: The framework or library name (e.g., "fastapi", "django", "celery")
+
+    Returns:
+        Setup instructions markdown content or error message with available frameworks.
+    """
+    templates_dir = Path(__file__).parent / "config_resources"
+    template_path = templates_dir / f"{framework.lower()}.md"
+
+    if template_path.exists():
+        return template_path.read_text()
+    else:
+        available = [
+            f.stem for f in templates_dir.iterdir() if f.is_file() and f.suffix == ".md"
+        ]
+        available_list = ", ".join(sorted(available))
+        return (
+            f"Configuration not found for: {framework}\n\n"
+            f"Available frameworks: {available_list}"
+        )
+
+
+@mcp.resource("scoutapm://config-resources/{library_name}")
+def config_resource_handler(library_name: str) -> str:
+    """Resource handler: Get Scout APM setup instructions for a library/framework.
+
+    This provides official, tested configuration instructions.
+
+    Supported frameworks:
+    - Web: bottle, dash, django, falcon, fastapi, flask, hug, rails, starlette
+    - Background Jobs: celery, dramatiq, huey, rq
+    - Database: sqlalchemy
+    """
+    return _load_setup_instructions(library_name)
+
+
+@mcp.resource("scoutapm://config-resources/list")
+def list_config_resources() -> dict[str, str]:
+    """List all available Scout APM configuration templates.
+
+    Returns a dictionary mapping library/framework names to their resource URIs.
+    Use this to discover what configuration guides are available before fetching
+    a specific one with scoutapm://config-resources/{library_name}.
+    """
+    templates_dir = Path(__file__).parent / "config_resources"
+    templates = {}
+
+    if templates_dir.exists():
+        for template_file in templates_dir.iterdir():
+            if template_file.is_file() and template_file.suffix == ".md":
+                library_name = template_file.stem
+                templates[library_name] = f"scoutapm://config-resources/{library_name}"
+
+    return templates
+
+
+@mcp.tool(name="get_scout_setup_instructions")
+def get_scout_setup_instructions(framework: str) -> str:
+    """Get step-by-step instructions to instrument Scout APM in a framework.
+
+    Always use this tool first when asked to setup/instrument/configure
+    Scout APM in an application. This provides official, tested configuration
+    instructions that should be followed exactly.
+
+    Supported frameworks:
+    - Web: bottle, dash, django, falcon, fastapi, flask, hug, rails, starlette
+    - Background Jobs: celery, dramatiq, huey, rq
+    - Database: sqlalchemy
+
+    Args:
+        framework: The framework or library name (e.g., "fastapi", "django", "celery")
+
+    Returns:
+        Complete setup instructions including installation, configuration, and examples.
+    """
+    return _load_setup_instructions(framework)
 
 
 @mcp.tool(name="list_apps")
