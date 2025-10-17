@@ -103,16 +103,26 @@ export async function setupRails(orgKey: string, detectedPath?: string): Promise
   }
 
   // Check if config file already exists
-  const configPath = join(configDir, 'scout_apm.yml');
+  let configPath = join(configDir, 'scout_apm.yml');
   if (existsSync(configPath)) {
     console.log(chalk.yellow('⚠ scout_apm.yml already exists.'));
-    const overwrite = await clack.confirm({
-      message: 'Overwrite existing configuration?',
+    const action = await clack.select({
+      message: 'What would you like to do?',
+      options: [
+        { value: 'new', label: 'Create scout_apm.wizard.yml' },
+        { value: 'overwrite', label: 'Overwrite existing scout_apm.yml' },
+        { value: 'cancel', label: 'Cancel' },
+      ],
     });
 
-    if (!overwrite) {
+    if (action === 'cancel') {
       console.log(chalk.yellow('Setup cancelled.'));
       return;
+    }
+
+    if (action === 'new') {
+      configPath = join(configDir, 'scout_apm.wizard.yml');
+      console.log(chalk.blue(`Creating ${configPath} instead...`));
     }
   }
 
@@ -126,6 +136,14 @@ export async function setupRails(orgKey: string, detectedPath?: string): Promise
     writeFileSync(configPath, configContent, 'utf-8');
 
     console.log(chalk.green(`\n✓ Successfully created ${configPath}`));
+
+    // If we created a .wizard.yml file, add a note about reviewing it
+    if (configPath.endsWith('.wizard.yml')) {
+      console.log(
+        chalk.yellow('\n⚠ Note: Review the generated file and rename to scout_apm.yml when ready.')
+      );
+    }
+
     console.log(chalk.blue('\nNext steps:'));
     console.log(chalk.white('  1. Add scout_apm gem to your Gemfile:'));
     console.log(chalk.gray("     gem 'scout_apm'"));
