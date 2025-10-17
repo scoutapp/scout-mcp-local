@@ -10,7 +10,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "vite build && chmod +x ./dist/wizard.js",
+    "build": "vite build && chmod +x ./dist/wizard.js && mkdir -p dist/lib/templates && cp src/lib/templates/*.template dist/lib/templates/",
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
