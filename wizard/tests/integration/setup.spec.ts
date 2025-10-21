@@ -28,6 +28,7 @@ describe('setup - integration test', () => {
   it('should complete full setup flow with multiple orgs and Claude Code selection', async () => {
     // Mock user selections through the setup flow
     vi.mocked(clack.select)
+      .mockResolvedValueOnce('mcp') // What would you like to set up? -> MCP
       .mockResolvedValueOnce('sign_in') // Are you a Scout APM customer? -> Yes
       .mockResolvedValueOnce('456') // Select org -> Claude Code Org
       .mockResolvedValueOnce('claude-code'); // Which AI assistant? -> Claude Code
@@ -74,8 +75,18 @@ describe('setup - integration test', () => {
     expect(mockSpinner.start).toHaveBeenCalled();
     expect(mockSpinner.succeed).toHaveBeenCalledWith('Authentication successful! \n');
 
-    // Verify first selection: Are you a Scout APM customer?
+    // Verify first selection: What would you like to set up?
     expect(clack.select).toHaveBeenNthCalledWith(1, {
+      message: 'What would you like to set up?',
+      options: [
+        { value: 'mcp', label: 'Scout MCP (AI assistant integration)' },
+        { value: 'rails', label: 'Scout APM for Rails (specify project path)' },
+        { value: 'exit', label: 'Exit' },
+      ],
+    });
+
+    // Verify second selection: Are you a Scout APM customer?
+    expect(clack.select).toHaveBeenNthCalledWith(2, {
       message: 'Are you currently a Scout APM customer?',
       options: [
         { value: 'sign_in', label: 'Yes' },
@@ -85,7 +96,7 @@ describe('setup - integration test', () => {
     });
 
     // Verify org selection was prompted with all orgs
-    expect(clack.select).toHaveBeenNthCalledWith(2, {
+    expect(clack.select).toHaveBeenNthCalledWith(3, {
       message: 'Select an organization:',
       options: [
         { value: '123', label: 'Scout APM Org' },
@@ -95,7 +106,7 @@ describe('setup - integration test', () => {
     });
 
     // Verify AI assistant selection
-    expect(clack.select).toHaveBeenNthCalledWith(3, {
+    expect(clack.select).toHaveBeenNthCalledWith(4, {
       message: 'Which AI assistant are you using?',
       options: [
         { value: 'cursor', label: 'Cursor' },
