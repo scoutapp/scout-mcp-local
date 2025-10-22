@@ -221,9 +221,7 @@ class ScoutAPMAsync(ScoutAPMBase):
                 raise ValueError("API key is required")
             headers = self._get_auth_headers()
             headers["user-agent"] = "scout-mcp-local/0.1"
-            self.client = httpx.AsyncClient(
-                headers=self._get_auth_headers(), timeout=9.0
-            )
+            self.client = httpx.AsyncClient(headers=headers, timeout=9.0)
         return self.client
 
     async def get_apps(self) -> List[Dict[str, Union[int, str]]]:
