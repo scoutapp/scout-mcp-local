@@ -68,7 +68,7 @@ describe('setup - integration test', () => {
     // Verify browser was opened for authentication
     expect(open).toHaveBeenCalled();
     expect(vi.mocked(open).mock.calls[0][0]).toMatch(
-      /^https:\/\/test\.scoutapm\.com\/uat\/auth\/sign_in\/[A-Za-z0-9_-]+$/
+      /^https:\/\/test\.scoutapm\.com\/uat\/auth\/sign_in\/[A-Za-z0-9_-]+\?utm_source=scout_wizard$/
     );
 
     // Verify spinner lifecycle

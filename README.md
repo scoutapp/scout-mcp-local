@@ -34,17 +34,7 @@ environment or by a command-line argument on startup.**
 
 ## Installation
 
-We recommend using the provided Docker image to run the MCP server.
-It is intended to be started by your AI Assistant and configured with your Scout API
-key. Many local clients allow specifying a command to run the MCP server in some
-location. A few examples are provided below.
-
-The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/scout-mcp-local).
-
-Of course, you can always clone this repo and run the MCP server directly; `uv` or other
-environment management tools are recommended.
-
-## Setup Wizard
+### Setup Wizard
 
 The simplest way to configure and start using the Scout MCP is with our interactive setup wizard:
 
@@ -66,12 +56,24 @@ The wizard will guide you through:
 - Entering your Scout API key
 - Automatically configuring the MCP server settings
 
-### Supported Platforms
+#### Supported Platforms
 
 The wizard currently supports setup for:
 - **Cursor** - Automatically configures MCP settings
 - **Claude Code (CLI)** - Provides the correct command to run
 - **Claude Desktop** - Updates the configuration file for Windows/Mac
+
+### Docker
+
+Otherwise, we recommend using the provided Docker image to run the MCP server.
+It is intended to be started by your AI Assistant and configured with your Scout API
+key. Many local clients allow specifying a command to run the MCP server in some
+location. A few examples are provided below.
+
+The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/scout-mcp-local).
+
+Of course, you can always clone this repo and run the MCP server directly; `uv` or other
+environment management tools are recommended.
 
 ### Configure a local Client (e.g. Claude/Cursor/VS Code Copilot)
 
@@ -144,7 +146,7 @@ token limit (e.g. Claude Code `export MAX_MCP_OUTPUT_TOKENS=50000`), we recommen
 setting it generously high, e.g. 50,000 tokens.
 
 
-## Usage
+## Using the Scout Monitoring MCP
 
 Scout's MCP is intended to put error and performance data directly in the... hands? of your AI Assistant.
 Use it to get traces and errors with line-of-code information that the AI can use to target

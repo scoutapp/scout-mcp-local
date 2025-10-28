@@ -156,7 +156,7 @@ describe('authenticateWithUat', async () => {
 
     expect(mockOpen).toHaveBeenCalled();
     expect(mockOpen.mock.calls[0][0]).toMatch(
-      /^https:\/\/test\.scoutapm\.com\/uat\/auth\/sign_up\/[A-Za-z0-9_-]+$/
+      /^https:\/\/test\.scoutapm\.com\/uat\/auth\/sign_up\/[A-Za-z0-9_-]+\?utm_source=scout_wizard$/
     );
   });
 });
