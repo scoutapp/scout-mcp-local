@@ -12,31 +12,10 @@ and explained right where you are working.
 
 **If this makes your life a tiny bit better, why not :star: it?!**
 
-## Prerequisites
+## Setup Wizard
 
-You will need to have or create a Scout Monitoring account and obtain an API key.
-1. [Sign
-   up](https://scoutapm.com/users/sign_up?utm_source=github&utm_medium=github&utm_campaign=scout-mcp-local)
-2. Install the Scout Agent in your application and send Scout data!
-    - [Ruby](https://scoutapm.com/docs/ruby/setup)
-    - [Python](https://scoutapm.com/docs/python/setup)
-    - [PHP](https://scoutapm.com/docs/php)
-    - If you are trying this out locally, make sure `monitor: true`, `errors_enabled: true`
-      are set in your config for the best experience
-2. Visit [settings](https://scoutapm.com/settings) to get or create an API key
-    - This is _not_ your "Agent Key"; it's the "API Key" that can be created on the
-      Settings page
-    - This is a read-only key that can only access data in your account
-2. Install Docker. Instructions below assume you can start a Docker container
-
-**The MCP server will not currently start without an API key set, either in the
-environment or by a command-line argument on startup.**
-
-## Installation
-
-### Setup Wizard
-
-The simplest way to configure and start using the Scout MCP is with our interactive setup wizard:
+The simplest way to configure and start using the Scout MCP is with our interactive setup wizard.
+It handles all the prereqs and installation steps for you.
 
 Run via npx:
 ```bash
@@ -63,9 +42,33 @@ The wizard currently supports setup for:
 - **Claude Code (CLI)** - Provides the correct command to run
 - **Claude Desktop** - Updates the configuration file for Windows/Mac
 
-### Docker
+For all others, it will output JSON that you can copy/paste into your AI Assistant's MCP configuration.
 
-Otherwise, we recommend using the provided Docker image to run the MCP server.
+## Prerequisites
+
+The Wizard is a great way to get started, but you can also set things up manually.
+You will need to have or create a Scout Monitoring account and obtain an API key.
+
+1. [Sign
+   up](https://scoutapm.com/users/sign_up?utm_source=github&utm_medium=github&utm_campaign=scout-mcp-local)
+2. Install the Scout Agent in your application and send Scout data!
+    - [Ruby](https://scoutapm.com/docs/ruby/setup)
+    - [Python](https://scoutapm.com/docs/python/setup)
+    - [PHP](https://scoutapm.com/docs/php)
+    - If you are trying this out locally, make sure `monitor: true`, `errors_enabled: true`
+      are set in your config for the best experience
+2. Visit [settings](https://scoutapm.com/settings) to get or create an API key
+    - This is _not_ your "Agent Key"; it's the "API Key" that can be created on the
+      Settings page
+    - This is a read-only key that can only access data in your account
+2. Install Docker. Instructions below assume you can start a Docker container
+
+**The MCP server will not currently start without an API key set, either in the
+environment or by a command-line argument on startup.**
+
+## Installation
+
+We recommend using the provided Docker image to run the MCP server.
 It is intended to be started by your AI Assistant and configured with your Scout API
 key. Many local clients allow specifying a command to run the MCP server in some
 location. A few examples are provided below.
@@ -138,12 +141,6 @@ Add the following to your claude config file:
 </details>
 
 
-### Token Usage
-
-We are currently more interested in expanding available information than strictly
-controlling response size from our MCP tools. If your AI Assistant has a configurable
-token limit (e.g. Claude Code `export MAX_MCP_OUTPUT_TOKENS=50000`), we recommend
-setting it generously high, e.g. 50,000 tokens.
 
 
 ## Using the Scout Monitoring MCP
@@ -200,6 +197,12 @@ The Scout MCP provides configuration templates as resources that your AI assista
 - "Get any recent n+1 insights for app `Bar`. Pull the specific trace by id and help me
   optimize it based on the backtrace data."
 
+### Token Usage
+
+We are currently more interested in expanding available information than strictly
+controlling response size from our MCP tools. If your AI Assistant has a configurable
+token limit (e.g. Claude Code `export MAX_MCP_OUTPUT_TOKENS=50000`), we recommend
+setting it generously high, e.g. 50,000 tokens.
 
 ## Local Development
 
