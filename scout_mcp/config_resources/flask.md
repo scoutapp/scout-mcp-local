@@ -26,6 +26,7 @@ ScoutApm(app)
 app.config["SCOUT_MONITOR"] = True
 app.config["SCOUT_KEY"] = "{SCOUT_KEY}"
 app.config["SCOUT_NAME"] = "{APP_NAME}"
+app.config["SCOUT_ERRORS_ENABLED"] = True # Recommended: Enable error tracking
 ```
 
 **Alternative: Using Environment Variables**

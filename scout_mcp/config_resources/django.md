@@ -31,6 +31,8 @@ Add these settings to your `settings.py`:
 SCOUT_MONITOR = True
 SCOUT_KEY = "{SCOUT_KEY}"
 SCOUT_NAME = "{APP_NAME}"
+SCOUT_ERRORS_ENABLED = True  # Recommended: Enable error tracking
+
 ```
 
 **Alternative: Using Environment Variables**
