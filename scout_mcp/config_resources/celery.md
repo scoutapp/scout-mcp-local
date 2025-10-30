@@ -22,6 +22,7 @@ Config.set(
     key="{SCOUT_KEY}",
     name="{APP_NAME}",
     monitor=True,
+    errors_enabled=True  # Recommended: Enable error tracking
 )
 
 # Create Celery app
