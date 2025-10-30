@@ -88,9 +88,10 @@ export const authenticateWithUat = async (authType: string): Promise<UatKeyRespo
     const { verifier: firstVerifier, challenge: firstChallenge } = createVerifierAndChallenge();
     const firstChallengeB64 = Buffer.from(firstChallenge).toString('base64url');
 
-    const authUrl = `${baseUrl}/uat/auth/${authType}/${firstChallengeB64}`;
+    const authUrl = new URL(`/uat/auth/${authType}/${firstChallengeB64}`, baseUrl);
+    authUrl.searchParams.append('utm_source', 'scout_wizard');
 
-    await openUrl(authUrl);
+    await openUrl(authUrl.toString());
 
     // Step 2: Poll for authentication completion / if the challenge token has been created.
     console.log(chalk.yellow('Please complete authentication in your browser... \n'));

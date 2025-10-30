@@ -12,9 +12,43 @@ and explained right where you are working.
 
 **If this makes your life a tiny bit better, why not :star: it?!**
 
+## Setup Wizard
+
+The simplest way to configure and start using the Scout MCP is with our interactive setup wizard.
+It handles all the prereqs and installation steps for you.
+
+Run via npx:
+```bash
+npx @scout_apm/wizard
+```
+
+Build and run from source:
+```bash
+cd ./wizard
+npm install
+npm run build
+node dist/wizard.js
+```
+
+The wizard will guide you through:
+- Selecting your AI coding platform (Cursor, Claude Code, Claude Desktop)
+- Entering your Scout API key
+- Automatically configuring the MCP server settings
+
+#### Supported Platforms
+
+The wizard currently supports setup for:
+- **Cursor** - Automatically configures MCP settings
+- **Claude Code (CLI)** - Provides the correct command to run
+- **Claude Desktop** - Updates the configuration file for Windows/Mac
+
+For all others, it will output JSON that you can copy/paste into your AI Assistant's MCP configuration.
+
 ## Prerequisites
 
+The Wizard is a great way to get started, but you can also set things up manually.
 You will need to have or create a Scout Monitoring account and obtain an API key.
+
 1. [Sign
    up](https://scoutapm.com/users/sign_up?utm_source=github&utm_medium=github&utm_campaign=scout-mcp-local)
 2. Install the Scout Agent in your application and send Scout data!
@@ -43,35 +77,6 @@ The Docker image is available on [Docker Hub](https://hub.docker.com/r/scoutapp/
 
 Of course, you can always clone this repo and run the MCP server directly; `uv` or other
 environment management tools are recommended.
-
-## Setup Wizard
-
-The simplest way to configure and start using the Scout MCP is with our interactive setup wizard:
-
-Run via npx:
-```bash
-npx @scout_apm/wizard
-```
-
-Build and run from source:
-```bash
-cd ./wizard
-npm install
-npm run build
-node dist/wizard.js
-```
-
-The wizard will guide you through:
-- Selecting your AI coding platform (Cursor, Claude Code, Claude Desktop)
-- Entering your Scout API key
-- Automatically configuring the MCP server settings
-
-### Supported Platforms
-
-The wizard currently supports setup for:
-- **Cursor** - Automatically configures MCP settings
-- **Claude Code (CLI)** - Provides the correct command to run
-- **Claude Desktop** - Updates the configuration file for Windows/Mac
 
 ### Configure a local Client (e.g. Claude/Cursor/VS Code Copilot)
 
@@ -136,15 +141,9 @@ Add the following to your claude config file:
 </details>
 
 
-### Token Usage
-
-We are currently more interested in expanding available information than strictly
-controlling response size from our MCP tools. If your AI Assistant has a configurable
-token limit (e.g. Claude Code `export MAX_MCP_OUTPUT_TOKENS=50000`), we recommend
-setting it generously high, e.g. 50,000 tokens.
 
 
-## Usage
+## Using the Scout Monitoring MCP
 
 Scout's MCP is intended to put error and performance data directly in the... hands? of your AI Assistant.
 Use it to get traces and errors with line-of-code information that the AI can use to target
@@ -198,6 +197,12 @@ The Scout MCP provides configuration templates as resources that your AI assista
 - "Get any recent n+1 insights for app `Bar`. Pull the specific trace by id and help me
   optimize it based on the backtrace data."
 
+### Token Usage
+
+We are currently more interested in expanding available information than strictly
+controlling response size from our MCP tools. If your AI Assistant has a configurable
+token limit (e.g. Claude Code `export MAX_MCP_OUTPUT_TOKENS=50000`), we recommend
+setting it generously high, e.g. 50,000 tokens.
 
 ## Local Development
 
