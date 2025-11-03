@@ -57,6 +57,7 @@ jobs:
         username: ${{ secrets.SCOUTAPP_DOCKER_USERNAME }}
         password: ${{ secrets.SCOUTAPP_DOCKER_PAT }}
 
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
@@ -67,6 +68,8 @@ jobs:
           type=ref,event=pr
           type=match,pattern=v(.*),group=1
           type=raw,value=latest,enable={{is_default_branch}}
+        labels: |
+          io.modelcontextprotocol.server.name=io.github.scoutapp/scout-mcp-local
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
