@@ -1,5 +1,7 @@
 # Scout Monitoring MCP
 
+<!-- mcp-name: io.github.com/scoutapp/scout-mcp-local -->
+
 This repository contains code to locally run an MCP server that can access [Scout
 Monitoring](https://www.scoutapm.com) data via Scout's API. We provide a Docker image that can be pulled and run by
 your AI Assistant to access Scout Monitoring data.
@@ -219,3 +221,8 @@ Connect within inspector to add API key, set to STDIO transport
 docker build -t scout-mcp-local .
 ```
 
+## Release
+
+1. Branch and bump versions with `uv run python bump_versions.py`
+1. Get that merged
+1. Create a GitHub release with the new version (`gh release create v2025.11.3 --generate-notes --draft`)
