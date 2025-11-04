@@ -1,6 +1,6 @@
 {
   "name": "@scout_apm/wizard",
-  "version": "2025.11.3",
+  "version": "2025.11.4",
   "description": "Scout Wizard",
   "main": "dist/scout-wizard.js",
   "repository": "github:scoutapp/scout-mcp-local",

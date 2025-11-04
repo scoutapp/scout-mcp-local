@@ -69,7 +69,7 @@ jobs:
           type=match,pattern=v(.*),group=1
           type=raw,value=latest,enable={{is_default_branch}}
         labels: |
-          io.modelcontextprotocol.server.name=io.github.scoutapp/scout-mcp-local
+          io.modelcontextprotocol.server.name=com.scoutapm/scout-mcp-local
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
