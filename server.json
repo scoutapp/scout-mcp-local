@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "com.scoutapm/scout-mcp-local",
+  "description": "An MCP server for Scout Monitoring data interactions.",
+  "repository": {
+    "url": "https://github.com/scoutapp/scout-mcp-local",
+    "source": "github"
+  },
+  "version": "2025.11.4",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "scout-mcp-local",
+      "version": "2025.11.4",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Your API key for Scout Monitoring.",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "SCOUT_API_KEY"
+        }
+      ]
+    },
+    {
+      "registryType": "oci",
+      "identifier": "docker.io/scoutapp/scout-mcp-local:latest",
+      "environmentVariables": [
+        {
+          "name": "SCOUT_API_KEY",
+          "description": "Your API key for Scout Monitoring.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

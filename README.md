@@ -222,3 +222,13 @@ Connect within inspector to add API key, set to STDIO transport
 ```bash
 docker build -t scout-mcp-local .
 ```
+
+## Release
+
+1. Branch and bump versions with `uv run python bump_versions.py`
+1. Get that merged
+1. Create a GitHub release with the new version (`gh release create v2025.11.3 --generate-notes --draft`)
+
+For the bots:
+
+mcp-name: com.scoutapm/scout-mcp-local
