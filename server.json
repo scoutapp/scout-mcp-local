@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
-  "name": "io.github.scoutapp/scout-mcp-local",
+  "name": "com.scoutapm/scout-mcp-local",
   "description": "An MCP server for Scout Monitoring data interactions.",
   "repository": {
     "url": "https://github.com/scoutapp/scout-mcp-local",
     "source": "github"
   },
-  "version": "2025.11.3",
+  "version": "2025.11.4",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "scout-mcp-local",
-      "version": "2025.11.3",
+      "version": "2025.11.4",
       "transport": {
         "type": "stdio"
       },

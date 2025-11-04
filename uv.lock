@@ -947,7 +947,7 @@ wheels = [
 
 [[package]]
 name = "scout-mcp-local"
-version = "2025.11.3"
+version = "2025.11.4"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
