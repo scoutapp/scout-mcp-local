@@ -5,7 +5,7 @@
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@scoutapp/scout-mcp-local/badge" alt="Scout Monitoring MCP server" />
 </a>
 
-hr
+<hr
 
 This repository contains code to locally run an MCP server that can access [Scout
 Monitoring](https://www.scoutapm.com) data via Scout's API. We provide a Docker image that can be pulled and run by
