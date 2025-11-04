@@ -1,9 +1,10 @@
 # Scout Monitoring MCP
 
-[![MCP Badge](https://lobehub.com/badge/mcp/scoutapp-scout-mcp-local)](https://lobehub.com/mcp/scoutapp-scout-mcp-local)
 <a href="https://glama.ai/mcp/servers/@scoutapp/scout-mcp-local">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@scoutapp/scout-mcp-local/badge" alt="Scout Monitoring MCP server" />
 </a>
+
+[![MCP Badge](https://lobehub.com/badge/mcp/scoutapp-scout-mcp-local)](https://lobehub.com/mcp/scoutapp-scout-mcp-local)
 
 <hr
 
