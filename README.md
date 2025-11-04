@@ -4,6 +4,10 @@ This repository contains code to locally run an MCP server that can access [Scou
 Monitoring](https://www.scoutapm.com) data via Scout's API. We provide a Docker image that can be pulled and run by
 your AI Assistant to access Scout Monitoring data.
 
+<a href="https://glama.ai/mcp/servers/@scoutapp/scout-mcp-local">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@scoutapp/scout-mcp-local/badge" alt="Scout Monitoring MCP server" />
+</a>
+
 This puts Scout Monitoring's performance and error data directly in the hands of your AI Assistant.
 For Rails, Django, FastAPI, Laravel and more. Use it to get traces and errors with line-of-code information
 that the AI can use to target fixes right in your editor and codebase. N+1 queries, slow endpoints,
