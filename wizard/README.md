@@ -1,8 +1,7 @@
 # Scout Wizard
 
 The Scout Wizard help you add the Scout Monitoring MPC (Model Context Protocol) configuration to your preferred agentic coding platform.
-
-> **Early Stage** This wizard is considered pre-release, and thus its functionality is limited to setup of the Scout MCP. Eventually, this wizard will facilitate setup and configuration of the full Scout Monitoring suite of tools.
+It can also help you register for Scout Monitoring if you don't already have an account.
 
 ## Usage
 
