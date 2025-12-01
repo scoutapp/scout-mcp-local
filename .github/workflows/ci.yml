@@ -16,6 +16,7 @@ env:
 
 jobs:
   test:
+    name: Python Tests
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -36,6 +37,7 @@ jobs:
       run: uv run task check
 
   build-and-push:
+    name: Build and Push Docker Image
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -83,6 +85,7 @@ jobs:
         cache-to: type=gha,mode=max
 
   publish-python:
+    name: Publish Python Package
     needs: test
     runs-on: ubuntu-latest
     permissions:
