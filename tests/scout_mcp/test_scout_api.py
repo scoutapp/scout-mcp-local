@@ -671,6 +671,151 @@ class TestScoutAPMAsync:
             await client.get_insight_by_type(1, "invalid_type")
 
 
+    @pytest.mark.asyncio
+    async def test_get_jobs(self, client):
+        """Test get_jobs method."""
+        mock_response = {
+            "results": [
+                {
+                    "full_name": "EmailJob",
+                    "name": "EmailJob",
+                    "queue": "default",
+                    "job_id": "RW1haWxKb2I=",
+                    "throughput": 100,
+                    "execution_time": 250,
+                    "time_consumed": 25000,
+                    "latency": 50,
+                },
+            ]
+        }
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            jobs = await client.get_jobs(1, duration)
+
+            mock_request.assert_called_once_with(
+                "GET",
+                "apps/1/jobs",
+                params={"from": "2024-01-01T00:00:00Z", "to": "2024-01-02T00:00:00Z"},
+            )
+            assert len(jobs) == 1
+            assert jobs[0]["full_name"] == "EmailJob"
+
+    @pytest.mark.asyncio
+    async def test_get_job_metrics(self, client):
+        """Test get_job_metrics method."""
+        mock_response = {
+            "results": {
+                "availableMetrics": [
+                    "throughput",
+                    "execution_time",
+                    "latency",
+                    "errors",
+                    "allocations",
+                ]
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            metrics = await client.get_job_metrics(1, "RW1haWxKb2I=")
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/jobs/RW1haWxKb2I=/metrics"
+            )
+            assert "throughput" in metrics
+            assert "execution_time" in metrics
+
+    @pytest.mark.asyncio
+    async def test_get_job_metric(self, client):
+        """Test get_job_metric method."""
+        mock_response = {
+            "results": {"series": {"execution_time": [[1704067200, 250], [1704070800, 300]]}}
+        }
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            data = await client.get_job_metric(
+                1, "RW1haWxKb2I=", "execution_time", duration
+            )
+
+            mock_request.assert_called_once_with(
+                "GET",
+                "apps/1/jobs/RW1haWxKb2I=/metrics/execution_time",
+                params={"from": "2024-01-01T00:00:00Z", "to": "2024-01-02T00:00:00Z"},
+            )
+            assert data == [[1704067200, 250], [1704070800, 300]]
+
+    @pytest.mark.asyncio
+    async def test_get_job_metric_invalid_metric(self, client):
+        """Test get_job_metric with invalid metric type."""
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+        with pytest.raises(ValueError, match="Invalid metric_type"):
+            await client.get_job_metric(1, "RW1haWxKb2I=", "apdex", duration)
+
+    @pytest.mark.asyncio
+    async def test_get_job_traces(self, client):
+        """Test get_job_traces method."""
+        mock_response = {
+            "results": {
+                "traces": [
+                    {
+                        "id": 1,
+                        "time": "2024-01-07T10:00:00Z",
+                        "duration": 500,
+                        "name": "EmailJob",
+                        "queue": "default",
+                        "metric_name": "Job/EmailJob",
+                        "context": {},
+                    }
+                ]
+            }
+        }
+        duration = make_duration("2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z")
+
+        fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
+            mock_datetime.now.return_value = fixed_now
+            mock_datetime.fromisoformat = datetime.fromisoformat
+            mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
+
+            with patch.object(
+                client, "_make_request", return_value=mock_response
+            ) as mock_request:
+                traces = await client.get_job_traces(1, "RW1haWxKb2I=", duration)
+
+                mock_request.assert_called_once_with(
+                    "GET",
+                    "apps/1/jobs/RW1haWxKb2I=/traces",
+                    params={
+                        "from": "2024-01-07T00:00:00Z",
+                        "to": "2024-01-07T12:00:00Z",
+                    },
+                )
+                assert len(traces) == 1
+                assert traces[0]["name"] == "EmailJob"
+
+    @pytest.mark.asyncio
+    async def test_get_job_traces_too_old(self, client):
+        """Test get_job_traces with date too old."""
+        duration = make_duration("2023-12-31T00:00:00Z", "2024-01-01T00:00:00Z")
+        fixed_now = datetime(2024, 1, 8, tzinfo=timezone.utc)
+        with patch("scout_mcp.scout_api.datetime") as mock_datetime:
+            mock_datetime.now.return_value = fixed_now
+            mock_datetime.fromisoformat = datetime.fromisoformat
+            mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
+
+            with pytest.raises(
+                ValueError, match="from_time cannot be older than 7 days"
+            ):
+                await client.get_job_traces(1, "RW1haWxKb2I=", duration)
+
+
 class TestExceptions:
     """Test custom exceptions."""
 
