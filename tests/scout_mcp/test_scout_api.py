@@ -670,7 +670,6 @@ class TestScoutAPMAsync:
         with pytest.raises(ValueError, match="Invalid insight_type"):
             await client.get_insight_by_type(1, "invalid_type")
 
-
     @pytest.mark.asyncio
     async def test_get_jobs(self, client):
         """Test get_jobs method."""
@@ -733,7 +732,9 @@ class TestScoutAPMAsync:
     async def test_get_job_metric(self, client):
         """Test get_job_metric method."""
         mock_response = {
-            "results": {"series": {"execution_time": [[1704067200, 250], [1704070800, 300]]}}
+            "results": {
+                "series": {"execution_time": [[1704067200, 250], [1704070800, 300]]}
+            }
         }
         duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
 

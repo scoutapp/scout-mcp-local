@@ -27,7 +27,10 @@ class TestGetAppJobs:
         ]
 
         with patch.object(
-            scout_api.ScoutAPMAsync, "get_jobs", new_callable=AsyncMock, return_value=mock_jobs
+            scout_api.ScoutAPMAsync,
+            "get_jobs",
+            new_callable=AsyncMock,
+            return_value=mock_jobs,
         ):
             result = await server.get_app_jobs(
                 1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
