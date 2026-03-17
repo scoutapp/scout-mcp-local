@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from scout_mcp import server
-from scout_mcp import scout_api
+from scout_mcp import scout_api, server
+from scout_mcp.scout_api import ScoutAPMAuthError
 
 
 def test_server():
@@ -135,3 +135,97 @@ class TestGetAppJobTraces:
                 1, "2024-01-07T00:00:00Z", "2024-01-07T12:00:00Z", "RW1haWxKb2I=",
             )
             assert result[0]["error"] == "API error"
+
+
+class TestGetUsageTool:
+    """Tests for the get_usage MCP tool."""
+
+    @pytest.mark.asyncio
+    async def test_basic_per_transaction(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per transaction",
+            "apm": {"total_transactions": 500000},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "2024-01-01T00:00:00Z" in result
+        assert "per transaction" in result
+        assert "500,000" in result
+        assert "unlimited" in result
+
+    @pytest.mark.asyncio
+    async def test_apm_with_limit(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per transaction",
+            "apm": {"total_transactions": 500000, "limit": 1000000},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "500,000 / 1,000,000" in result
+
+    @pytest.mark.asyncio
+    async def test_per_node_pricing_shows_nodes(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per node",
+            "apm": {"total_transactions": 200000},
+            "nodes": {"active_count": 5},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "Active nodes: 5" in result
+
+    @pytest.mark.asyncio
+    async def test_errors_section_when_present(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per transaction",
+            "apm": {"total_transactions": 100000},
+            "errors": {"count": 150, "limit": 1000},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "150 / 1,000" in result
+
+    @pytest.mark.asyncio
+    async def test_errors_section_absent_when_not_present(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per transaction",
+            "apm": {"total_transactions": 100000},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "Errors" not in result
+
+    @pytest.mark.asyncio
+    async def test_logs_section_when_present(self):
+        usage_data = {
+            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "pricing_style": "per transaction",
+            "apm": {"total_transactions": 100000},
+            "logs": {"bytes_used": 1073741824, "limit_bytes": 10737418240},
+        }
+        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+            result = await server.get_usage()
+
+        assert "1.00 GB / 10.00 GB" in result
+
+    @pytest.mark.asyncio
+    async def test_api_error_returns_error_string(self):
+        with patch.object(
+            server.api_client,
+            "get_usage",
+            new=AsyncMock(side_effect=ScoutAPMAuthError("Authentication failed")),
+        ):
+            result = await server.get_usage()
+
+        assert "Error:" in result
+        assert "Authentication failed" in result

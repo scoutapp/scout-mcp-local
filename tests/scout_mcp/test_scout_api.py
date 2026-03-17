@@ -817,6 +817,88 @@ class TestScoutAPMAsync:
                 await client.get_job_traces(1, "RW1haWxKb2I=", duration)
 
 
+class TestGetUsage:
+    """Test get_usage method."""
+
+    @pytest.fixture
+    def client(self):
+        return ScoutAPMAsync("test_key")
+
+    @pytest.mark.asyncio
+    async def test_get_usage_basic(self, client):
+        """Test get_usage returns results."""
+        mock_response = {
+            "results": {
+                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "pricing_style": "per transaction",
+                "apm": {"total_transactions": 500000},
+            }
+        }
+
+        with patch.object(client, "_make_request", return_value=mock_response) as mock_request:
+            result = await client.get_usage()
+
+            mock_request.assert_called_once_with("GET", "usage")
+            assert result["billing_period"]["start"] == "2024-01-01T00:00:00Z"
+            assert result["apm"]["total_transactions"] == 500000
+
+    @pytest.mark.asyncio
+    async def test_get_usage_with_limit(self, client):
+        """Test get_usage includes limit when present."""
+        mock_response = {
+            "results": {
+                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "pricing_style": "per transaction",
+                "apm": {"total_transactions": 500000, "limit": 1000000},
+            }
+        }
+
+        with patch.object(client, "_make_request", return_value=mock_response):
+            result = await client.get_usage()
+            assert result["apm"]["limit"] == 1000000
+
+    @pytest.mark.asyncio
+    async def test_get_usage_per_node(self, client):
+        """Test get_usage includes nodes for per-node pricing."""
+        mock_response = {
+            "results": {
+                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "pricing_style": "per node",
+                "apm": {"total_transactions": 200000},
+                "nodes": {"active_count": 5},
+            }
+        }
+
+        with patch.object(client, "_make_request", return_value=mock_response):
+            result = await client.get_usage()
+            assert result["nodes"]["active_count"] == 5
+
+    @pytest.mark.asyncio
+    async def test_get_usage_with_errors_and_logs(self, client):
+        """Test get_usage includes errors and logs when present."""
+        mock_response = {
+            "results": {
+                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "pricing_style": "per transaction",
+                "apm": {"total_transactions": 100000},
+                "errors": {"count": 150, "limit": 1000},
+                "logs": {"bytes_used": 1073741824, "limit_bytes": 10737418240},
+            }
+        }
+
+        with patch.object(client, "_make_request", return_value=mock_response):
+            result = await client.get_usage()
+            assert result["errors"]["count"] == 150
+            assert result["logs"]["bytes_used"] == 1073741824
+
+    @pytest.mark.asyncio
+    async def test_get_usage_empty_results(self, client):
+        """Test get_usage with empty results."""
+        with patch.object(client, "_make_request", return_value={"results": {}}):
+            result = await client.get_usage()
+            assert result == {}
+
+
 class TestExceptions:
     """Test custom exceptions."""
 

@@ -439,6 +439,11 @@ class ScoutAPMAsync(ScoutAPMBase):
         )
         return response.get("results", {})
 
+    async def get_usage(self) -> Dict[str, Any]:
+        """Get usage and billing data for the current billing period."""
+        response = await self._make_request("GET", "usage")
+        return response.get("results", {})
+
     async def get_insight_by_type(
         self, app_id: int, insight_type: str, limit: Optional[int] = None
     ) -> Dict[str, Any]:
