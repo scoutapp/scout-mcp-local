@@ -29,7 +29,9 @@ class TestGetAppJobs:
         with patch.object(
             scout_api.ScoutAPMAsync, "get_jobs", new_callable=AsyncMock, return_value=mock_jobs
         ):
-            result = await server.get_app_jobs(1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+            result = await server.get_app_jobs(
+                1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
+            )
             assert len(result) == 1
             assert result[0]["full_name"] == "EmailJob"
 
@@ -41,7 +43,9 @@ class TestGetAppJobs:
             new_callable=AsyncMock,
             side_effect=scout_api.ScoutAPMAPIError("API error"),
         ):
-            result = await server.get_app_jobs(1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+            result = await server.get_app_jobs(
+                1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
+            )
             assert result[0]["error"] == "API error"
 
 
