@@ -143,11 +143,16 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_basic_per_transaction(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per transaction",
             "apm": {"total_transactions": 500000},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "2024-01-01T00:00:00Z" in result
@@ -158,11 +163,16 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_apm_with_limit(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per transaction",
             "apm": {"total_transactions": 500000, "limit": 1000000},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "500,000 / 1,000,000" in result
@@ -170,12 +180,17 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_per_node_pricing_shows_nodes(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per node",
             "apm": {"total_transactions": 200000},
             "nodes": {"active_count": 5},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "Active nodes: 5" in result
@@ -183,12 +198,17 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_errors_section_when_present(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per transaction",
             "apm": {"total_transactions": 100000},
             "errors": {"count": 150, "limit": 1000},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "150 / 1,000" in result
@@ -196,11 +216,16 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_errors_section_absent_when_not_present(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per transaction",
             "apm": {"total_transactions": 100000},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "Errors" not in result
@@ -208,12 +233,17 @@ class TestGetUsageTool:
     @pytest.mark.asyncio
     async def test_logs_section_when_present(self):
         usage_data = {
-            "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+            "billing_period": {
+                "start": "2024-01-01T00:00:00Z",
+                "end": "2024-02-01T00:00:00Z",
+            },
             "pricing_style": "per transaction",
             "apm": {"total_transactions": 100000},
             "logs": {"bytes_used": 1073741824, "limit_bytes": 10737418240},
         }
-        with patch.object(server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)):
+        with patch.object(
+            server.api_client, "get_usage", new=AsyncMock(return_value=usage_data)
+        ):
             result = await server.get_usage()
 
         assert "1.00 GB / 10.00 GB" in result

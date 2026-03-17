@@ -449,9 +449,9 @@ async def get_usage() -> str:
     lines = []
 
     billing = data.get("billing_period", {})
-    lines.append(
-        f"Billing period: {billing.get('start', 'unknown')} to {billing.get('end', 'unknown')}"
-    )
+    start = billing.get("start", "unknown")
+    end = billing.get("end", "unknown")
+    lines.append(f"Billing period: {start} to {end}")
     lines.append(f"Pricing: {data.get('pricing_style', 'unknown')}")
 
     apm = data.get("apm", {})

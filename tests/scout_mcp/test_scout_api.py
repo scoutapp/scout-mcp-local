@@ -829,13 +829,18 @@ class TestGetUsage:
         """Test get_usage returns results."""
         mock_response = {
             "results": {
-                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "billing_period": {
+                    "start": "2024-01-01T00:00:00Z",
+                    "end": "2024-02-01T00:00:00Z",
+                },
                 "pricing_style": "per transaction",
                 "apm": {"total_transactions": 500000},
             }
         }
 
-        with patch.object(client, "_make_request", return_value=mock_response) as mock_request:
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
             result = await client.get_usage()
 
             mock_request.assert_called_once_with("GET", "usage")
@@ -847,7 +852,10 @@ class TestGetUsage:
         """Test get_usage includes limit when present."""
         mock_response = {
             "results": {
-                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "billing_period": {
+                    "start": "2024-01-01T00:00:00Z",
+                    "end": "2024-02-01T00:00:00Z",
+                },
                 "pricing_style": "per transaction",
                 "apm": {"total_transactions": 500000, "limit": 1000000},
             }
@@ -862,7 +870,10 @@ class TestGetUsage:
         """Test get_usage includes nodes for per-node pricing."""
         mock_response = {
             "results": {
-                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "billing_period": {
+                    "start": "2024-01-01T00:00:00Z",
+                    "end": "2024-02-01T00:00:00Z",
+                },
                 "pricing_style": "per node",
                 "apm": {"total_transactions": 200000},
                 "nodes": {"active_count": 5},
@@ -878,7 +889,10 @@ class TestGetUsage:
         """Test get_usage includes errors and logs when present."""
         mock_response = {
             "results": {
-                "billing_period": {"start": "2024-01-01T00:00:00Z", "end": "2024-02-01T00:00:00Z"},
+                "billing_period": {
+                    "start": "2024-01-01T00:00:00Z",
+                    "end": "2024-02-01T00:00:00Z",
+                },
                 "pricing_style": "per transaction",
                 "apm": {"total_transactions": 100000},
                 "errors": {"count": 150, "limit": 1000},
