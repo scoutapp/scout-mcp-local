@@ -222,6 +222,102 @@ async def get_app_endpoints(app_id: int, from_: str, to: str) -> list[dict[str, 
         return [{"error": str(e)}]
 
 
+@mcp.tool(name="get_app_jobs")
+async def get_app_jobs(app_id: int, from_: str, to: str) -> list[dict[str, Any]]:
+    """
+    Get all background jobs for a specific application. Also gets aggregated performance
+    metrics within the window of "from_" to "to". Useful for identifying high
+    throughput, high latency or high error rate jobs across the application with a
+    single call.
+
+    Each job includes: full_name, name, queue, job_id, throughput, execution_time,
+    time_consumed, latency.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        from_ (str): The start datetime in ISO 8601 format.
+        to (str): The end datetime in ISO 8601 format.
+    """
+    try:
+        duration = scout_api.make_duration(from_, to)
+        async with api_client as scout_client:
+            jobs = await scout_client.get_jobs(app_id, duration)
+        return jobs
+    except scout_api.ScoutAPMError as e:
+        return [{"error": str(e)}]
+
+
+@mcp.tool(name="get_job_metrics")
+async def get_job_metric(
+    app_id: int, job_id: str, metric: str, from_: str, to: str
+) -> dict[str, Any]:
+    """
+    Get a single timeseries metric for a specific background job in an application.
+
+    Valid job metrics: throughput, execution_time, latency, errors, allocations.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        job_id (str): The Base64-encoded job ID.
+        metric (str): The metric to retrieve (e.g., "execution_time", "throughput").
+        from_ (str): The start datetime in ISO 8601 format.
+        to (str): The end datetime in ISO 8601 format.
+    """
+    if metric not in scout_api.VALID_JOB_METRICS:
+        return {
+            "error": f"Invalid metric '{metric}'. "
+            f"Valid job metrics are: {', '.join(scout_api.VALID_JOB_METRICS)}"
+        }
+    try:
+        duration = scout_api.make_duration(from_, to)
+        async with api_client as scout_client:
+            data = await scout_client.get_job_metric(
+                app_id, job_id, metric, duration
+            )
+    except Exception as e:
+        return {"error": str(e)}
+
+    if not data:
+        return {
+            "error": f"No data available for job {job_id} and metric {metric}"
+        }
+
+    return {
+        "app_id": app_id,
+        "job_id": job_id,
+        "metric": metric,
+        "duration": f"{from_} to {to}",
+        "data_points": len(data),
+        "series": data,
+    }
+
+
+@mcp.tool(name="get_app_job_traces")
+async def get_app_job_traces(
+    app_id: int, from_: str, to: str, job_id: str
+) -> list[dict[str, Any]]:
+    """
+    Get recent traces for an app filtered to a specific background job.
+
+    Each trace includes: id, time, duration, name, queue, metric_name, context.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        job_id (str): The Base64-encoded job ID.
+        from_ (str): The start datetime in ISO 8601 format.
+        to (str): The end datetime in ISO 8601 format.
+    """
+    try:
+        duration = scout_api.make_duration(from_, to)
+        async with api_client as scout_client:
+            traces = await scout_client.get_job_traces(
+                app_id, job_id, duration
+            )
+        return traces
+    except scout_api.ScoutAPMError as e:
+        return [{"error": str(e)}]
+
+
 @mcp.tool(name="get_endpoint_metrics")
 async def get_endpoint_metric(
     app_id: int, endpoint: str, metric: str, from_: str, to: str

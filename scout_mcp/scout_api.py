@@ -35,6 +35,13 @@ VALID_METRICS = {
     "queue_time",
     "apdex",
 }
+VALID_JOB_METRICS = {
+    "throughput",
+    "execution_time",
+    "latency",
+    "errors",
+    "allocations",
+}
 
 
 class ScoutAPMError(Exception):
@@ -123,6 +130,14 @@ class ScoutAPMBase(ABC):
                 raise ScoutAPMAPIError(error_msg, status_code, data)
 
         return data
+
+    def _validate_job_metric_params(self, metric_type: str, duration: Duration):
+        """Validate job metric parameters."""
+        if metric_type not in VALID_JOB_METRICS:
+            raise ValueError(
+                f"Invalid metric_type. Must be one of: {', '.join(VALID_JOB_METRICS)}"
+            )
+        self._validate_time_range(duration)
 
     def _validate_metric_params(self, metric_type: str, duration: Duration):
         """Validate metric parameters.
@@ -267,6 +282,63 @@ class ScoutAPMAsync(ScoutAPMBase):
             "GET", f"apps/{app_id}/endpoints", params=params
         )
         return response.get("results", [])
+
+    async def get_jobs(
+        self, app_id: int, duration: Duration
+    ) -> List[Dict[str, Any]]:
+        """Get list of background jobs for an application."""
+        self._validate_time_range(duration)
+        params = {
+            "from": _format_time(duration.start),
+            "to": _format_time(duration.end),
+        }
+        response = await self._make_request(
+            "GET", f"apps/{app_id}/jobs", params=params
+        )
+        return response.get("results", [])
+
+    async def get_job_metrics(self, app_id: int, job_id: str) -> List[str]:
+        """Get list of available metrics for a specific job."""
+        response = await self._make_request(
+            "GET", f"apps/{app_id}/jobs/{job_id}/metrics"
+        )
+        return response.get("results", {}).get("availableMetrics", [])
+
+    async def get_job_metric(
+        self,
+        app_id: int,
+        job_id: str,
+        metric: str,
+        duration: Duration,
+    ) -> List:
+        """Get metric timeseries data for a specific job."""
+        self._validate_job_metric_params(metric, duration)
+        response = await self._make_request(
+            "GET",
+            f"apps/{app_id}/jobs/{job_id}/metrics/{metric}",
+            params=self._get_duration_params(duration),
+        )
+        return response.get("results", {}).get("series", {}).get(metric, [])
+
+    async def get_job_traces(
+        self,
+        app_id: int,
+        job_id: str,
+        duration: Duration,
+    ) -> List[Dict[str, Any]]:
+        """Get traces for a specific job."""
+        self._validate_time_range(duration)
+
+        seven_days_ago = datetime.now(tz=timezone.utc) - timedelta(days=7)
+        if duration.start < seven_days_ago:
+            raise ValueError("from_time cannot be older than 7 days")
+
+        response = await self._make_request(
+            "GET",
+            f"apps/{app_id}/jobs/{job_id}/traces",
+            params=self._get_duration_params(duration),
+        )
+        return response.get("results", {}).get("traces", [])
 
     async def get_endpoint_metric(
         self,
