@@ -431,6 +431,65 @@ async def get_app_error_groups(
         return [{"error": str(e)}]
 
 
+@mcp.tool(name="get_usage")
+async def get_usage() -> str:
+    """
+    Get usage and billing data for the current billing period.
+
+    Returns billing period dates, pricing style, APM transaction counts (with limit
+    if applicable), node counts (for per-node pricing), error counts (if error
+    monitoring is enabled), and log bytes used (if logs integration is enabled).
+    """
+    try:
+        async with api_client as scout_client:
+            data = await scout_client.get_usage()
+    except scout_api.ScoutAPMError as e:
+        return f"Error: {e}"
+
+    lines = []
+
+    billing = data.get("billing_period", {})
+    start = billing.get("start", "unknown")
+    end = billing.get("end", "unknown")
+    lines.append(f"Billing period: {start} to {end}")
+    lines.append(f"Pricing: {data.get('pricing_style', 'unknown')}")
+
+    apm = data.get("apm", {})
+    if apm:
+        total = apm.get("total_transactions", 0)
+        limit = apm.get("limit")
+        if limit is not None:
+            lines.append(f"APM transactions: {total:,} / {limit:,}")
+        else:
+            lines.append(f"APM transactions: {total:,} (unlimited)")
+
+    nodes = data.get("nodes")
+    if nodes is not None:
+        lines.append(f"Active nodes: {nodes.get('active_count', 0)}")
+
+    errors = data.get("errors")
+    if errors is not None:
+        count = errors.get("count", 0)
+        limit = errors.get("limit")
+        if limit is not None:
+            lines.append(f"Errors: {count:,} / {limit:,}")
+        else:
+            lines.append(f"Errors: {count:,}")
+
+    logs = data.get("logs")
+    if logs is not None:
+        bytes_used = logs.get("bytes_used", 0)
+        limit_bytes = logs.get("limit_bytes")
+        gb_used = bytes_used / 1_073_741_824
+        if limit_bytes is not None:
+            gb_limit = limit_bytes / 1_073_741_824
+            lines.append(f"Logs: {gb_used:.2f} GB / {gb_limit:.2f} GB")
+        else:
+            lines.append(f"Logs: {gb_used:.2f} GB")
+
+    return "\n".join(lines)
+
+
 @mcp.tool(name="get_app_insights")
 async def get_app_insights(
     app_id: int, insight_type: str | None = None, limit: int | None = None
