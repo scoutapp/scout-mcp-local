@@ -6,12 +6,12 @@
     "url": "https://github.com/scoutapp/scout-mcp-local",
     "source": "github"
   },
-  "version": "2025.11.4",
+  "version": "2026.3.20",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "scout-mcp-local",
-      "version": "2025.11.4",
+      "version": "2026.3.20",
       "transport": {
         "type": "stdio"
       },
