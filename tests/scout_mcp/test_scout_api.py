@@ -167,6 +167,67 @@ class TestScoutAPMBase:
         with pytest.raises(ScoutAPMAPIError, match="Not found"):
             client._handle_response_errors(mock_response)
 
+    def test_handle_response_errors_504_empty_body(self):
+        """504 with empty body should surface the status, not 'Invalid JSON'."""
+        client = ScoutAPMAsync("test_key")
+        mock_response = Mock()
+        mock_response.status_code = 504
+        mock_response.reason_phrase = "Gateway Timeout"
+        mock_response.json.side_effect = json.JSONDecodeError("Expecting value", "", 0)
+        mock_response.text = ""
+
+        with pytest.raises(ScoutAPMAPIError) as exc_info:
+            client._handle_response_errors(mock_response)
+
+        message = str(exc_info.value)
+        assert "504" in message
+        assert "Gateway Timeout" in message
+        assert "<empty>" in message
+        assert "Invalid JSON" not in message
+        assert exc_info.value.status_code == 504
+
+    def test_handle_response_errors_502_html_body_truncated(self):
+        """502 with a long HTML body should surface 502 and truncate body."""
+        client = ScoutAPMAsync("test_key")
+        mock_response = Mock()
+        mock_response.status_code = 502
+        mock_response.reason_phrase = "Bad Gateway"
+        mock_response.json.side_effect = json.JSONDecodeError("Expecting value", "", 0)
+        long_html = "<html>" + ("x" * 2000) + "</html>"
+        mock_response.text = long_html
+
+        with pytest.raises(ScoutAPMAPIError) as exc_info:
+            client._handle_response_errors(mock_response)
+
+        message = str(exc_info.value)
+        assert "502" in message
+        assert "Bad Gateway" in message
+        # Body should be truncated to 500 chars; full 2000-char body must not appear.
+        assert long_html not in message
+        assert exc_info.value.status_code == 502
+
+    def test_handle_response_errors_401_still_raises_auth_error(self):
+        """Regression: 401 must raise ScoutAPMAuthError even with empty body."""
+        client = ScoutAPMAsync("test_key")
+        mock_response = Mock()
+        mock_response.status_code = 401
+        mock_response.json.side_effect = json.JSONDecodeError("Expecting value", "", 0)
+        mock_response.text = ""
+
+        with pytest.raises(ScoutAPMAuthError, match="Authentication failed"):
+            client._handle_response_errors(mock_response)
+
+    def test_handle_response_errors_200_valid_json_passthrough(self):
+        """Regression: 200 with valid JSON returns the parsed payload unchanged."""
+        client = ScoutAPMAsync("test_key")
+        mock_response = Mock()
+        mock_response.status_code = 200
+        payload = {"results": {"apps": [{"id": 1, "name": "test"}]}}
+        mock_response.json.return_value = payload
+
+        result = client._handle_response_errors(mock_response)
+        assert result == payload
+
 
 class TestScoutAPMAsync:
     """Test asynchronous Scout APM client."""
