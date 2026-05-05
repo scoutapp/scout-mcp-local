@@ -10,6 +10,72 @@ def test_server():
     assert server.mcp
 
 
+class TestGetAppMetric:
+    @pytest.mark.asyncio
+    async def test_get_app_metric_success(self):
+        mock_data = {"response_time": [[1704067200, 250], [1704070800, 300]]}
+
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_metric_data",
+            new_callable=AsyncMock,
+            return_value=mock_data,
+        ) as mock_method:
+            result = await server.get_app_metric(
+                1, "response_time",
+                "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z",
+            )
+
+            # Verify Duration was constructed and passed (not raw strings)
+            args = mock_method.call_args.args
+            assert args[0] == 1
+            assert args[1] == "response_time"
+            assert isinstance(args[2], scout_api.Duration)
+
+            assert result["app_id"] == 1
+            assert result["metric"] == "response_time"
+            assert result["data_points"] == 2
+            assert result["series"] == mock_data["response_time"]
+
+    @pytest.mark.asyncio
+    async def test_get_app_metric_invalid_metric(self):
+        result = await server.get_app_metric(
+            1, "not_a_metric",
+            "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z",
+        )
+        assert "error" in result
+        assert "Invalid metric" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_app_metric_no_data(self):
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_metric_data",
+            new_callable=AsyncMock,
+            return_value={},
+        ):
+            result = await server.get_app_metric(
+                1, "response_time",
+                "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z",
+            )
+            assert "error" in result
+            assert "No data available" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_get_app_metric_api_error(self):
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_metric_data",
+            new_callable=AsyncMock,
+            side_effect=scout_api.ScoutAPMAPIError("API error"),
+        ):
+            result = await server.get_app_metric(
+                1, "response_time",
+                "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z",
+            )
+            assert result["error"] == "API error"
+
+
 class TestGetAppJobs:
     @pytest.mark.asyncio
     async def test_get_app_jobs_success(self):

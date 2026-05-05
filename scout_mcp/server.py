@@ -177,8 +177,9 @@ async def get_app_metric(
             f"Valid metrics are: {', '.join(scout_api.VALID_METRICS)}"
         }
     try:
+        duration = scout_api.make_duration(from_, to)
         async with api_client as scout_client:
-            data = await scout_client.get_metric_data(app_id, metric, from_, to)
+            data = await scout_client.get_metric_data(app_id, metric, duration)
     except scout_api.ScoutAPMError as e:
         return {"error": str(e)}
 
