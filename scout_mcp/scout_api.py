@@ -103,18 +103,35 @@ class ScoutAPMBase(ABC):
         return {"X-SCOUT-API": self.api_key}
 
     def _handle_response_errors(self, response: httpx.Response) -> Dict[str, Any]:
-        """Handle common response errors and parse JSON."""
+        """Handle common response errors and parse JSON.
+
+        The HTTP status is checked before attempting to parse JSON so that
+        upstream failures with empty or non-JSON bodies (e.g. 502/504 from a
+        proxy in front of the Scout APM API on long time windows) surface a
+        status-aware error rather than a misleading "Invalid JSON response".
+        """
+        # 401 always means auth failure regardless of body shape.
+        if response.status_code == 401:
+            raise ScoutAPMAuthError("Authentication failed - check your API key")
+
         # Try to parse JSON response
         try:
             data = response.json()
         except json.JSONDecodeError:
+            body = response.text or "<empty>"
+            truncated = body[:500]
+            if response.status_code >= 400:
+                reason = getattr(response, "reason_phrase", "") or ""
+                raise ScoutAPMAPIError(
+                    f"Upstream returned {response.status_code} {reason}".rstrip()
+                    + f" with non-JSON body: {truncated}",
+                    response.status_code,
+                )
             raise ScoutAPMAPIError(
-                f"Invalid JSON response: {response.text}", response.status_code
+                f"Invalid JSON response (status {response.status_code}): "
+                f"{truncated}",
+                response.status_code,
             )
-
-        # Check for API-level errors
-        if response.status_code == 401:
-            raise ScoutAPMAuthError("Authentication failed - check your API key")
 
         if response.status_code >= 400:
             error_msg = "API request failed"
