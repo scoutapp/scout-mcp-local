@@ -66,10 +66,9 @@ export async function setup(): Promise<void> {
   }
 
   const baseUrl = getBaseUrl();
-  let keys: UatKeyResponse | null = null;
 
   // Try UAT authentication first. Fallback if it fails.
-  keys = await authenticateWithUat(action as string);
+  const keys: UatKeyResponse | null = await authenticateWithUat(action as string);
   let agentKey = keys ? keys.api_key : null;
 
   // Fall back to manual key entry if UAT fails
