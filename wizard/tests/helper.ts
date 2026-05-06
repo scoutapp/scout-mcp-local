@@ -6,45 +6,44 @@ global.fetch = vi.fn();
 // Don't mock crypto - we need real crypto for the implementation
 // The tests will check URL patterns instead of exact hashes
 
-vi.mock('node:child_process', async () => {
-  const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process');
-  return {
-    ...actual,
+vi.mock('node:child_process', () => {
+  const mocks = {
     // eslint-disable-next-line
     exec: vi.fn((cmd: string, cb: Function) => {
       cb(null, 'Successfully added MCP server', '');
       return {} as any;
     }),
   };
+  return { ...mocks, default: mocks };
 });
 
-vi.mock('node:fs', async () => {
-  const actual = await vi.importActual<typeof import('node:fs')>('node:fs');
-  return {
-    ...actual,
+vi.mock('node:fs', () => {
+  const mocks = {
     existsSync: vi.fn(),
     readFileSync: vi.fn(),
     writeFileSync: vi.fn(),
     mkdirSync: vi.fn(),
   };
+  return { ...mocks, default: mocks };
 });
 
-vi.mock('node:path', async () => {
-  const actual = await vi.importActual<typeof import('node:path')>('node:path');
-  return {
-    ...actual,
-    join: vi.fn((...paths) => paths.join('/')),
-    dirname: vi.fn(path => path.split('/').slice(0, -1).join('/')),
+vi.mock('node:path', () => {
+  const mocks = {
+    join: vi.fn((...paths: string[]) => paths.join('/')),
+    dirname: vi.fn((path: string) => path.split('/').slice(0, -1).join('/')),
+    resolve: vi.fn((...paths: string[]) => paths.join('/')),
+    sep: '/',
   };
+  return { ...mocks, default: mocks };
 });
 
-vi.mock('node:os', async () => {
-  const actual = await vi.importActual<typeof import('node:os')>('node:os');
-  return {
-    ...actual,
+vi.mock('node:os', () => {
+  const mocks = {
     platform: vi.fn(() => 'darwin'),
     homedir: vi.fn(() => '/Users/testuser'),
+    tmpdir: vi.fn(() => '/tmp'),
   };
+  return { ...mocks, default: mocks };
 });
 
 // Mock external dependencies

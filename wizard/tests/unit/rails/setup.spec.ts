@@ -3,7 +3,17 @@ import { isRailsProject } from '@/lib/rails/setup';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-vi.mock('node:fs');
+vi.mock('node:fs', () => {
+  const mocks = {
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    mkdirSync: vi.fn(),
+    accessSync: vi.fn(),
+    constants: { W_OK: 2 },
+  };
+  return { ...mocks, default: mocks };
+});
 
 describe('Rails Setup', () => {
   beforeEach(() => {
