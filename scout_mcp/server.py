@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -430,6 +430,67 @@ async def get_app_error_groups(
         return errors
     except scout_api.ScoutAPMError as e:
         return [{"error": str(e)}]
+
+
+@mcp.tool(name="get_app_anomaly_events")
+async def get_app_anomaly_events(
+    app_id: int,
+    from_: str,
+    to: str,
+    state: str | None = None,
+    metric: str | None = None,
+    endpoint: str | None = None,
+) -> list[dict[str, Any]]:
+    """
+    List anomaly events for a Scout APM application within a timeframe.
+
+    Anomaly events flag statistically significant deviations in a metric (e.g.
+    response time spike, throughput drop) detected against a learned baseline.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        from_ (str): The start datetime in ISO 8601 format.
+        to (str): The end datetime in ISO 8601 format.
+        state (str | None): Filter by state - "open", "closed", or "all"
+                            (default: server-side, typically "open").
+        metric (str | None): Filter by metric - one of response_time,
+                             response_time_p95, throughput, error_rate,
+                             job_call_time, job_throughput.
+        endpoint (str | None): Filter by endpoint (controller path).
+    """
+    try:
+        duration = scout_api.make_duration(from_, to)
+        async with api_client as scout_client:
+            return await scout_client.get_anomaly_events(
+                app_id,
+                duration,
+                state=state,
+                metric=metric,
+                endpoint=endpoint,
+            )
+    except scout_api.ScoutAPMError as e:
+        return [{"error": str(e)}]
+    except ValueError as e:
+        return [{"error": str(e)}]
+
+
+@mcp.tool(name="get_app_anomaly_event")
+async def get_app_anomaly_event(
+    app_id: int, anomaly_event_id: int
+) -> dict[str, Any]:
+    """
+    Get a single anomaly event by ID, including joined smart_monitor and deploy
+    context.
+
+    Args:
+        app_id (int): The ID of the Scout APM application.
+        anomaly_event_id (int): The ID of the anomaly event to retrieve.
+    """
+    try:
+        async with api_client as scout_client:
+            return await scout_client.get_anomaly_event(app_id, anomaly_event_id)
+    except scout_api.ScoutAPMError as e:
+        return {"error": str(e)}
 
 
 @mcp.tool(name="get_usage")
