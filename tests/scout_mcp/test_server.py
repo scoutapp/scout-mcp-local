@@ -288,6 +288,7 @@ class TestGetAppAnomalyEvent:
             "metric": "response_time",
             "smart_monitor": {
                 "id": 7, "name": "Users latency", "kind": "response_time",
+                "severity_threshold": 4.0, "duration_minutes": 1,
             },
             "deploy": {
                 "id": 99, "sha": "abc123", "deployed_at": "2024-01-01T00:00:00Z",

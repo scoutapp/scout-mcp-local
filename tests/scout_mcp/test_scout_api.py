@@ -984,6 +984,8 @@ class TestAnomalyEvents:
                         "id": 7,
                         "name": "Users index latency",
                         "kind": "response_time",
+                        "severity_threshold": 4.0,
+                        "duration_minutes": 1,
                     },
                     "deploy": {
                         "id": 99,
