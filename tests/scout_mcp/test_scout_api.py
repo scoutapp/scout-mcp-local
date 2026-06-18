@@ -878,6 +878,144 @@ class TestScoutAPMAsync:
                 await client.get_job_traces(1, "RW1haWxKb2I=", duration)
 
 
+class TestAnomalyEvents:
+    """Test anomaly events methods."""
+
+    @pytest.fixture
+    def client(self):
+        return ScoutAPMAsync("test_key")
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_events_basic(self, client):
+        """Test get_anomaly_events with no optional filters."""
+        mock_response = {
+            "results": {
+                "anomaly_events": [
+                    {
+                        "id": 1,
+                        "metric": "response_time",
+                        "endpoint": "UsersController#index",
+                        "direction": "up",
+                        "severity": "high",
+                        "open": True,
+                    }
+                ]
+            }
+        }
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            events = await client.get_anomaly_events(1, duration)
+
+            mock_request.assert_called_once_with(
+                "GET",
+                "apps/1/anomaly_events",
+                params={
+                    "from": "2024-01-01T00:00:00Z",
+                    "to": "2024-01-02T00:00:00Z",
+                },
+            )
+            assert len(events) == 1
+            assert events[0]["metric"] == "response_time"
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_events_with_filters(self, client):
+        """Test get_anomaly_events with all optional filters."""
+        mock_response = {"results": {"anomaly_events": []}}
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            result = await client.get_anomaly_events(
+                1,
+                duration,
+                state="open",
+                metric="response_time",
+                endpoint="UsersController#index",
+            )
+            assert result == []
+            mock_request.assert_called_once_with(
+                "GET",
+                "apps/1/anomaly_events",
+                params={
+                    "from": "2024-01-01T00:00:00Z",
+                    "to": "2024-01-02T00:00:00Z",
+                    "state": "open",
+                    "metric": "response_time",
+                    "endpoint": "UsersController#index",
+                },
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_events_invalid_state(self, client):
+        """Invalid state should raise ValueError."""
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+        with pytest.raises(ValueError, match="Invalid state"):
+            await client.get_anomaly_events(1, duration, state="bogus")
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_events_invalid_metric(self, client):
+        """Invalid metric should raise ValueError."""
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+        with pytest.raises(ValueError, match="Invalid metric"):
+            await client.get_anomaly_events(1, duration, metric="apdex")
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_events_empty_results(self, client):
+        """Test get_anomaly_events with empty results."""
+        duration = make_duration("2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z")
+        with patch.object(client, "_make_request", return_value={"results": {}}):
+            events = await client.get_anomaly_events(1, duration)
+            assert events == []
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_event(self, client):
+        """Test get_anomaly_event method."""
+        mock_response = {
+            "results": {
+                "anomaly_event": {
+                    "id": 42,
+                    "metric": "response_time",
+                    "endpoint": "UsersController#index",
+                    "smart_monitor": {
+                        "id": 7,
+                        "name": "Users index latency",
+                        "kind": "response_time",
+                        "severity_threshold": 4.0,
+                        "duration_minutes": 1,
+                    },
+                    "deploy": {
+                        "id": 99,
+                        "sha": "abc123",
+                        "deployed_at": "2024-01-01T00:00:00Z",
+                    },
+                }
+            }
+        }
+
+        with patch.object(
+            client, "_make_request", return_value=mock_response
+        ) as mock_request:
+            event = await client.get_anomaly_event(1, 42)
+
+            mock_request.assert_called_once_with(
+                "GET", "apps/1/anomaly_events/42"
+            )
+            assert event["id"] == 42
+            assert event["smart_monitor"]["name"] == "Users index latency"
+            assert event["deploy"]["sha"] == "abc123"
+
+    @pytest.mark.asyncio
+    async def test_get_anomaly_event_empty_results(self, client):
+        """Test get_anomaly_event with empty results."""
+        with patch.object(client, "_make_request", return_value={"results": {}}):
+            event = await client.get_anomaly_event(1, 42)
+            assert event == {}
+
+
 class TestGetUsage:
     """Test get_usage method."""
 

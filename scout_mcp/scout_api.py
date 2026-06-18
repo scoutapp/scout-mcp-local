@@ -42,6 +42,15 @@ VALID_JOB_METRICS = {
     "errors",
     "allocations",
 }
+VALID_ANOMALY_EVENT_STATES = {"open", "closed", "all"}
+VALID_ANOMALY_METRICS = {
+    "response_time",
+    "response_time_p95",
+    "throughput",
+    "error_rate",
+    "job_call_time",
+    "job_throughput",
+}
 
 
 class ScoutAPMError(Exception):
@@ -435,6 +444,52 @@ class ScoutAPMAsync(ScoutAPMBase):
             f"apps/{app_id}/error_groups/{error_group_id}/errors",
         )
         return response.get("results", {}).get("errors", [])
+
+    async def get_anomaly_events(
+        self,
+        app_id: int,
+        duration: Duration,
+        state: Optional[str] = None,
+        metric: Optional[str] = None,
+        endpoint: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Get anomaly events for an application within a timeframe."""
+        self._validate_time_range(duration)
+        if state is not None and state not in VALID_ANOMALY_EVENT_STATES:
+            raise ValueError(
+                "Invalid state. Must be one of: "
+                + ", ".join(VALID_ANOMALY_EVENT_STATES)
+            )
+        if metric is not None and metric not in VALID_ANOMALY_METRICS:
+            raise ValueError(
+                "Invalid metric. Must be one of: "
+                + ", ".join(VALID_ANOMALY_METRICS)
+            )
+
+        params = self._get_duration_params(duration)
+        if state:
+            params["state"] = state
+        if metric:
+            params["metric"] = metric
+        if endpoint:
+            params["endpoint"] = endpoint
+
+        response = await self._make_request(
+            "GET",
+            f"apps/{app_id}/anomaly_events",
+            params=params,
+        )
+        return response.get("results", {}).get("anomaly_events", [])
+
+    async def get_anomaly_event(
+        self, app_id: int, anomaly_event_id: int
+    ) -> Dict[str, Any]:
+        """Get a single anomaly event including smart_monitor and deploy context."""
+        response = await self._make_request(
+            "GET",
+            f"apps/{app_id}/anomaly_events/{anomaly_event_id}",
+        )
+        return response.get("results", {}).get("anomaly_event", {})
 
     def _get_duration_params(self, duration: Duration) -> Dict[str, str]:
         """Get duration parameters for API requests."""

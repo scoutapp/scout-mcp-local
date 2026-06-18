@@ -203,6 +203,119 @@ class TestGetAppJobTraces:
             assert result[0]["error"] == "API error"
 
 
+class TestGetAppAnomalyEvents:
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_events_success(self):
+        mock_events = [
+            {
+                "id": 1,
+                "metric": "response_time",
+                "endpoint": "UsersController#index",
+                "direction": "up",
+                "severity": "high",
+                "open": True,
+            }
+        ]
+
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_anomaly_events",
+            new_callable=AsyncMock,
+            return_value=mock_events,
+        ) as mock_method:
+            result = await server.get_app_anomaly_events(
+                1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
+            )
+
+            assert len(result) == 1
+            assert result[0]["metric"] == "response_time"
+            # Confirm a Duration object was constructed and passed
+            args, kwargs = mock_method.call_args
+            assert args[0] == 1
+            assert isinstance(args[1], scout_api.Duration)
+
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_events_with_filters(self):
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_anomaly_events",
+            new_callable=AsyncMock,
+            return_value=[],
+        ) as mock_method:
+            await server.get_app_anomaly_events(
+                1,
+                "2024-01-01T00:00:00Z",
+                "2024-01-02T00:00:00Z",
+                state="open",
+                metric="response_time",
+                endpoint="UsersController#index",
+            )
+            kwargs = mock_method.call_args.kwargs
+            assert kwargs["state"] == "open"
+            assert kwargs["metric"] == "response_time"
+            assert kwargs["endpoint"] == "UsersController#index"
+
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_events_api_error(self):
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_anomaly_events",
+            new_callable=AsyncMock,
+            side_effect=scout_api.ScoutAPMAPIError("API error"),
+        ):
+            result = await server.get_app_anomaly_events(
+                1, "2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"
+            )
+            assert result[0]["error"] == "API error"
+
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_events_invalid_state(self):
+        result = await server.get_app_anomaly_events(
+            1,
+            "2024-01-01T00:00:00Z",
+            "2024-01-02T00:00:00Z",
+            state="bogus",
+        )
+        assert "error" in result[0]
+        assert "Invalid state" in result[0]["error"]
+
+
+class TestGetAppAnomalyEvent:
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_event_success(self):
+        mock_event = {
+            "id": 42,
+            "metric": "response_time",
+            "smart_monitor": {
+                "id": 7, "name": "Users latency", "kind": "response_time",
+                "severity_threshold": 4.0, "duration_minutes": 1,
+            },
+            "deploy": {
+                "id": 99, "sha": "abc123", "deployed_at": "2024-01-01T00:00:00Z",
+            },
+        }
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_anomaly_event",
+            new_callable=AsyncMock,
+            return_value=mock_event,
+        ):
+            result = await server.get_app_anomaly_event(1, 42)
+            assert result["id"] == 42
+            assert result["smart_monitor"]["name"] == "Users latency"
+
+    @pytest.mark.asyncio
+    async def test_get_app_anomaly_event_error(self):
+        with patch.object(
+            scout_api.ScoutAPMAsync,
+            "get_anomaly_event",
+            new_callable=AsyncMock,
+            side_effect=scout_api.ScoutAPMAPIError("API error"),
+        ):
+            result = await server.get_app_anomaly_event(1, 42)
+            assert result["error"] == "API error"
+
+
 class TestGetUsageTool:
     """Tests for the get_usage MCP tool."""
 
