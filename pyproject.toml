@@ -3,13 +3,13 @@ name = "scout-mcp-local"
 maintainers = [
   {name = "Scout Monitoring", email = "support@scoutapm.com"}
 ]
-version = "2026.5.5"
+version = "2026.9.28"
 description = "A local MCP for Scout Monitoring data interactions."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.28.1",
-    "mcp[cli]>=1.27.0",
+    "mcp[cli]>=1.27.0,<2",
 ]
 
 [project.scripts]
