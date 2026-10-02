@@ -1,7 +1,9 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.scoutapm/scout-mcp-local",
-  "description": "An MCP server for Scout Monitoring data interactions.",
+  "title": "Scout APM (local)",
+  "description": "Run Scout APM's MCP tools locally with an API key: endpoints, traces, errors, and N+1 insights.",
+  "websiteUrl": "https://scoutapm.com/docs/ai/mcp-local",
   "repository": {
     "url": "https://github.com/scoutapp/scout-mcp-local",
     "source": "github"
