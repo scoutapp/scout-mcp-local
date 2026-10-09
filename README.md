@@ -234,6 +234,27 @@ docker build -t scout-mcp-local .
 1. Get that merged
 1. Create a GitHub release with the new version (`gh release create v2025.11.3 --generate-notes --draft`)
 
+Publishing the release pushes the `v*` tag, and CI publishes the Docker image, the PyPI package, and then the
+[MCP Registry](https://registry.modelcontextprotocol.io) entries:
+
+- `server.json` → `com.scoutapm/scout-mcp-local` (this server; its version is bumped by `bump_versions.py`)
+- `server.remote.json` → `com.scoutapm/scout-apm` (the hosted server at `https://scoutapm.com/mcp`). Bump its
+  `version` by hand when you change its metadata; unchanged versions are skipped.
+
+### MCP Registry key
+
+The registry verifies we own the `com.scoutapm/*` namespace through a DNS TXT record at the `scoutapm.com` apex
+holding an Ed25519 public key. CI signs in with the matching private key from the `MCP_REGISTRY_PRIVATE_KEY`
+repository secret. To rotate it:
+
+```bash
+openssl genpkey -algorithm Ed25519 -out key.pem
+# Public key for the TXT record: replace the existing v=MCPv1 record, don't add a second one
+echo "v=MCPv1; k=ed25519; p=$(openssl pkey -in key.pem -pubout -outform DER | tail -c 32 | base64)"
+# Private key (hex) for the MCP_REGISTRY_PRIVATE_KEY secret
+openssl pkey -in key.pem -noout -text | grep -A3 "priv:" | tail -n +2 | tr -d ' :\n'
+```
+
 For the bots:
 
 mcp-name: com.scoutapm/scout-mcp-local
