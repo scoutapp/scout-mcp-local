@@ -238,7 +238,7 @@ Publishing the release pushes the `v*` tag, and CI publishes the Docker image, t
 [MCP Registry](https://registry.modelcontextprotocol.io) entries:
 
 - `server.json` → `com.scoutapm/scout-mcp-local` (this server; its version is bumped by `bump_versions.py`)
-- `server.remote.json` → `com.scoutapm/scout-apm` (the hosted server at `https://scoutapm.com/mcp`). Bump its
+- `server.remote.json` → `com.scoutapm/scout-monitoring` (the hosted server at `https://scoutapm.com/mcp`). Bump its
   `version` by hand when you change its metadata; unchanged versions are skipped.
 
 ### MCP Registry key
